@@ -1,0 +1,553 @@
+@top START { compilationUnit }
+
+@detectDelim
+
+@precedence {
+	comma @left,
+	typeArgs @left
+}
+
+@skip { newline | whitespace | LineComment | BlockComment }
+
+@external tokens dotTokens from "./tokens" { dotIdentifier }
+
+@tokens {
+	// Line terminators
+	
+	newline {
+		$[\r\n\u0085\u2028\u2029]
+		| "\r\n"
+	}
+
+	// Comments
+	
+	LineComment { "//" ![\r\n\u0085\u2028\u2029]* }
+
+	BlockComment { "/*" (![\*] | "*" ![/])* "*/"? }
+
+	@precedence { LineComment, BlockComment, '/' }
+
+	// Whitespace
+	
+	whitespace { $[\t\u000b\u000c \u00a0\u1680\u2000-\u200a\u202a\u205f\u3000] }
+
+	// General
+
+	identifier { $[a-zA-Z_] $[a-zA-Z0-9_`]* }
+
+	// Integer literals
+
+	IntegerLiteral { 
+		decimalInteger
+		| hexadecimalInteger
+	}
+
+	ByteLiteral {
+		hexDigit
+	}
+
+	decimalInteger { decimalDigit }
+
+	decimalDigit { @digit }
+
+	hexadecimalInteger { '0' $[xX] hexDigit }
+	
+	hexDigit { $[0-9A-Fa-f] }
+
+	// Real literals
+
+	RealLiteral {
+		decimalDigit+ '.' decimalDigit* exponentPart?
+		| '.' decimalDigit+ exponentPart?
+		| decimalDigit+ exponentPart
+	}
+
+	@precedence { RealLiteral, IntegerLiteral }
+
+	// Boolean literals
+
+	BooleanLiteral {
+		"true" | "false"
+	}
+
+	exponentPart { $[eE] $[+\-]? decimalDigit }
+
+	// Character literals
+
+	SQSTRING { "'" character* "'" }
+
+	character {
+		singleCharacter
+		| simpleEscapeSequence
+		| hexadecimalEscapeSequence
+		| unicodeEscapeSequence
+	}
+
+	singleCharacter { !['\\\r\n\u0085\u2028\u2029] }
+
+	simpleEscapeSequence { "\\" $['"\\0abfnrtv] }
+	
+	hexadecimalEscapeSequence { "\\x" hexDigit hexDigit? hexDigit? hexDigit? }
+
+	unicodeEscapeSequence {
+		"\\u" hexDigit hexDigit hexDigit hexDigit
+		| "\\U" hexDigit hexDigit hexDigit hexDigit hexDigit hexDigit hexDigit hexDigit
+	}
+
+	// String literals
+
+	QSTRING {
+		regularString
+	}
+
+	regularString { '"' regularStringCharacter* '"' }
+
+	regularStringCharacter {
+		singleRegularStringCharacter
+		| simpleEscapeSequence
+		| hexadecimalEscapeSequence
+		| unicodeEscapeSequence
+	}
+
+	singleRegularStringCharacter { !["\\\r\n\u0085\u2028\u2029] }
+}
+
+// General
+
+TypeIdentifier {
+	identifier ~tid
+}
+
+FieldName {
+	identifier ~tid
+}
+
+dottedFieldName {
+	dottedNameT<FieldName>
+}
+
+// Compilation unit
+
+compilationUnit {
+	memberDecl*
+}
+
+memberDecl {
+	classDecl
+	| namespaceDecl
+	| fieldDecl
+	| languageDecl
+}
+
+/* Module-level declarations */
+compQstring {
+	sep1<QSTRING, '+'>
+}
+
+languageDecl {
+	dkw<'.language'> SQSTRING (',' SQSTRING (',' SQSTRING)?)?
+}
+
+/* Basic tokens */
+idt<type> {
+	type
+	/* Allow methodImpl attributes to be used as identifiers */
+	| kw<'native'>
+	| kw<'cil'>
+	| kw<'optil'>
+	| kw<'managed'>
+	| kw<'unmanaged'>
+	| kw<'forwardref'>
+	| kw<'preservesig'>
+	| kw<'runtime'>
+	| kw<'internalcall'>
+	| kw<'synchronized'>
+	| kw<'noinlining'>
+	| kw<'aggressiveinlining'>
+	| kw<'nooptimization'>
+	| kw<'aggressiveoptimization'>
+	| kw<'async'>
+	| kw<'extended'>
+	| SQSTRING
+}
+
+id {
+	idt<TypeIdentifier>
+}
+
+dottedNameT<type> {
+	sep1<idt<type>, '.'>
+}
+
+dottedName {
+	dottedNameT<TypeIdentifier>
+}
+
+/* Namespace and class declaration */
+namespaceDecl {
+	dkw<'.namespace'> dottedName namespaceBody
+}
+
+namespaceBody {
+	delim<'{' memberDecl* '}'>
+}
+
+classDecl {
+	dkw<'.class'> classAttr* dottedName typarsClause?
+	extendsClause? implClause?
+	classBody
+}
+
+classAttr {
+	kw<'public'>
+	| kw<'private'>
+	| kw<'value'>
+	| kw<'enum'>
+	| kw<'interface'>
+	| kw<'sealed'>
+	| kw<'abstract'>
+	| kw<'auto'>
+	| kw<'sequential'>
+	| kw<'explicit'>
+	| kw<'extended'>
+	| kw<'ansi'>
+	| kw<'unicode'>
+	| kw<'autochar'>
+	| kw<'import'>
+	| kw<'serializable'>
+	| kw<'windowsruntime'>
+	| kw<'nested'> kw<'public'>
+	| kw<'nested'> kw<'private'>
+	| kw<'nested'> kw<'family'>
+	| kw<'nested'> kw<'assembly'>
+	| kw<'nested'> kw<'famandassem'>
+	| kw<'nested'> kw<'famorassem'>
+	| kw<'beforefieldinit'>
+	| kw<'specialname'>
+	| kw<'rtspecialname'>
+	| kw<'flags'> '(' IntegerLiteral ')'
+}
+
+extendsClause {
+	kw<'extends'> typeSpec
+}
+
+implClause {
+	kw<'implements'> implList
+}
+
+implList {
+	csep1<typeSpec>
+}
+
+/* Generic type parameters declaration */
+typeList {
+	csep1<typeSpec>
+}
+
+typarsClause { '<' typars '>' }
+
+typarAttrib {
+	'+'
+	| '-'
+	| kw<'class'>
+	| kw<'valuetype'>
+	| kw<'byreflike'>
+	| dkw<'.ctor'>
+	| kw<'flags'> '(' IntegerLiteral ')'
+}
+
+typars { csep1<(typarAttrib* (tyBound ('+'|'-')?)? dottedName)> }
+
+tyBound { '(' typeList ')' }
+
+/* Class body declarations */
+classBody {
+	delim<'{' classMemberDecl* '}'>
+}
+
+classMemberDecl {
+	classDecl
+	| fieldDecl
+}
+
+/* Field declaration */
+fieldDecl {
+	dkw<'.field'> repeatOpt? fieldAttr* type dottedFieldName atOpt? initOpt?
+}
+
+fieldAttr {
+	kw<'static'>
+	| kw<'public'>
+	| kw<'private'>
+	| kw<'family'>
+	| kw<'initonly'>
+	| kw<'rtspecialname'>
+	| kw<'specialname'>
+	/* <STRIP>commented out because PInvoke for fields is not supported by EE
+	| kw<'pinvokeimpl'> '(' compQstring 'as' compQstring pinvAttr ')'
+	| kw<'pinvokeimpl'> '(' compQstring  pinvAttr ')'
+	| kw<'pinvokeimpl'> '(' pinvAttr ')'
+	</STRIP> */
+	| kw<'marshal'> '(' marshalBlob ')'
+	| kw<'assembly'>
+	| kw<'famandassem'>
+	| kw<'famorassem'>
+	| kw<'privatescope'>
+	| kw<'literal'>
+	| kw<'notserialized'>
+	| kw<'flags'> '(' IntegerLiteral ')'
+}
+
+atOpt {
+	'at' id
+}
+
+initOpt {
+	'=' fieldInit
+}
+
+repeatOpt {
+	'[' IntegerLiteral ']'
+}
+
+/* Method referencing */
+callConv {
+	kw<'instance'> callConv
+	| kw<'explicit'> callConv
+	| callKind?
+	| kw<'callconv'> '(' IntegerLiteral ')'
+}
+
+callKind {
+	(kw<'default'> | kw<'vararg'>)
+	| kw<'unmanaged'> (kw<'cdecl'> | kw<'stdcall'> | kw<'thiscall'> | kw<'fastcall'>)?
+}
+
+mdtoken {
+	kw<'mdtoken'> '(' IntegerLiteral ')'
+}
+
+/* Method declaration */
+marshalBlob {
+	nativeType?
+	| '{' ByteLiteral+ '}'
+}
+
+/* Default values declaration for fields, parameters and verbal form of CA blob description */
+fieldSerInit {
+	kw<'float32'> '(' RealLiteral ')'
+	| kw<'float64'> '(' RealLiteral ')'
+	| kw<'float32'> '(' IntegerLiteral ')'
+	| kw<'float64'> '(' IntegerLiteral ')'
+	| kw<'int64'> '(' IntegerLiteral ')'
+	| kw<'int32'> '(' IntegerLiteral ')'
+	| kw<'int16'> '(' IntegerLiteral ')'
+	| kw<'int8'> '(' IntegerLiteral ')'
+	| kw<'unsigned'> kw<'int64'> '(' IntegerLiteral ')'
+	| kw<'unsigned'> kw<'int32'> '(' IntegerLiteral ')'
+	| kw<'unsigned'> kw<'int16'> '(' IntegerLiteral ')'
+	| kw<'unsigned'> kw<'int8'> '(' IntegerLiteral ')'
+	| kw<'uint64'> '(' IntegerLiteral ')'
+	| kw<'uint32'> '(' IntegerLiteral ')'
+	| kw<'uint16'> '(' IntegerLiteral ')'
+	| kw<'uint8'> '(' IntegerLiteral ')'
+	| kw<'char'> '(' IntegerLiteral ')'
+	| kw<'bool'> '(' BooleanLiteral ')'
+	| kw<'bytearray'> '(' ByteLiteral ')'
+}
+
+/* Field/parameter initialization */
+fieldInit {
+	fieldSerInit
+	| compQstring
+	| kw<'nullref'>
+}
+
+/* IL instructions and associated definitions */
+methodSpec { kw<'method'> }
+
+/* Signatures */
+tyArgs1 { tyArgs2 }
+
+tyArgs2 { csep1<type> }
+
+sigArgs0 { csep0<sigArg> }
+
+sigArg {
+	'...'
+	//| paramAttr type marshalClause
+	//| paramAttr type marshalClause id
+}
+
+/* Class referencing */
+className {
+	'[' dottedName ']' slashedName
+	| '[' mdtoken ']' slashedName
+	| '[' '*' ']' slashedName
+	| '[' dkw<'.module'> dottedName ']' slashedName
+	| slashedName
+	| mdtoken
+	| dkw<'.this'>
+	| dkw<'.base'>
+	| dkw<'.nester'>
+}
+
+slashedName {
+	sep1<dottedName, '/'>
+}
+
+typeSpec {
+	className
+	| '[' dottedName ']'
+	| '[' dkw<'.module'> dottedName ']'
+	| type
+}
+
+/*  Native types for marshaling signatures  */
+nativeType {
+	kw<'custom'> '(' compQstring ',' compQstring (',' compQstring ',' compQstring)? ')'
+	| kw<'fixed'> kw<'sysstring'> '[' IntegerLiteral ']'
+	| kw<'fixed'> kw<'array'> '[' IntegerLiteral ']'
+	| kw<'variant'>
+	| kw<'currency'>
+	| kw<'syschar'>
+	| kw<'void'>
+	| kw<'bool'>
+	| kw<'int8'>
+	| kw<'int16'>
+	| kw<'int32'>
+	| kw<'int64'>
+	| kw<'float32'>
+	| kw<'float64'>
+	| kw<'error'>
+	| kw<'unsigned'> (kw<'int'> | kw<'int8'> | kw<'int16'> | kw<'int32'> | kw<'int64'>)
+	| kw<'uint8'>
+	| kw<'uint16'>
+	| kw<'uint32'>
+	| kw<'uint64'>
+	| nativeType '*'
+	| nativeType '[' IntegerLiteral? ('+' IntegerLiteral)? ']'
+	| kw<'decimal'>
+	| kw<'date'>
+	| kw<'bstr'>
+	| kw<'lpstr'>
+	| kw<'lpwstr'>
+	| kw<'lptstr'>
+	| kw<'objectref'>
+	| (kw<'iunknown'> | kw<'idispatch'> | kw<'interface'>) iidParamIndex?
+	| kw<'struct'>
+	| kw<'safearray'> variantType? (',' compQstring)?
+
+	| kw<'int'>
+	| kw<'uint'>
+	| kw<'nested'> kw<'struct'>
+	| kw<'byvalstr'>
+	| kw<'ansi'> kw<'bstr'>
+	| kw<'tbstr'>
+	| kw<'variant'> kw<'bool'>
+	| kw<'method'>
+	| kw<'as'> kw<'any'>
+	| kw<'lpstruct'>
+}
+
+iidParamIndex {
+	'(' 'iidparam' '=' IntegerLiteral ')'
+}
+
+variantType {
+	kw<'null'>
+	| kw<'variant'>
+	| kw<'currency'>
+	| kw<'void'>
+	| kw<'bool'>
+	| kw<'int8'>
+	| kw<'int16'>
+	| kw<'int32'>
+	| kw<'int64'>
+	| kw<'float32'>
+	| kw<'float64'>
+	| kw<'unsigned'> kw<'int8'>
+	| kw<'unsigned'> kw<'int16'>
+	| kw<'unsigned'> kw<'int32'>
+	| kw<'unsigned'> kw<'int64'>
+	| kw<'uint8'>
+	| kw<'uint16'>
+	| kw<'uint32'>
+	| kw<'uint64'>
+	| kw<'decimal'>
+	| kw<'date'>
+	| kw<'bstr'>
+	| kw<'lpstr'>
+	| kw<'lpwstr'>
+	| kw<'iunknown'>
+	| kw<'idispatch'>
+	| kw<'safearray'>
+	| kw<'int'>
+	| kw<'unsigned'> kw<'int'>
+	| kw<'uint'>
+	| kw<'error'>
+	| kw<'hresult'>
+	| kw<'carray'>
+	| kw<'userdefined'>
+	| kw<'record'>
+	| kw<'filetime'>
+	| kw<'blob'>
+	| kw<'stream'>
+	| kw<'storage'>
+	| kw<'streamed_object'>
+	| kw<'stored_object'>
+	| kw<'blob_object'>
+	| kw<'cf'>
+	| kw<'clsid'>
+}
+
+/* Managed types for signatures */
+type {
+	(kw<'class'> | kw<'valuetype'>) className
+	| (kw<'object'> | '&' | '*' | kw<'pinned'> | kw<'typedref'> | kw<'void'>)
+	| kw<'value'> kw<'class'> className
+	| type !typeArgs '[' bounds1? ']'
+	| type !typeArgs (kw<'modreq'> | kw<'modopt'>) '(' typeSpec ')'
+	| methodSpec callConv type '*' '(' sigArgs0 ')'
+	| type !typeArgs '<' tyArgs1 '>'
+	| '!' '!'? (IntegerLiteral | dottedName)
+	| kw<'native'> kw<'unsigned'>? kw<'int'>
+	| kw<'native'> kw<'uint'>
+	| simpleType
+	| '...' type
+}
+
+simpleType {
+	kw<'char'>
+	| kw<'string'>
+	| kw<'bool'>
+	| kw<'int8'>
+	| kw<'int16'>
+	| kw<'int32'>
+	| kw<'int64'>
+	| kw<'float32'>
+	| kw<'float64'>
+	| kw<'unsigned'> (kw<'int8'> | kw<'int16'> | kw<'int32'> | kw<'int64'>)
+	| kw<'uint8'>
+	| kw<'uint16'>
+	| kw<'uint32'>
+	| kw<'uint64'>
+}
+
+bounds1 { csep1<bound> }
+
+bound {
+	'...'
+	| IntegerLiteral
+	| IntegerLiteral '...' IntegerLiteral?
+}
+
+// Util
+
+kw<word> { @specialize[@name=Keyword]<identifier, word> }
+dkw<word> { @specialize[@name=Keyword]<dotIdentifier, word> }
+delim<contents> { delim[@name=Delim] { contents } }
+sep1<rule, by> { rule (by rule)* }
+csep1<rule> { sep1<rule, !comma ','> }
+csep0<rule> { csep1<rule>? }
