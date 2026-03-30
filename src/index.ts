@@ -32,7 +32,7 @@ export const msilLanguage = LRLanguage.define({
         ". .. : Astrisk Slash % + - ++ -- Not ~ << & | ^ && || < > <= >= == NotEq = += -= *= SlashEq %= &= |= ^= ? ?? ??= =>":
           t.operator,
 
-        PP_Directive: t.keyword,
+        "P_DEFINE P_UNDEF P_IFDEF P_IFNDEF P_ELSE P_ENDIF P_INCLUDE P_LINE": t.definitionKeyword,
 
         TypeIdentifier: t.typeName,
         "ArgumentName AttrsNamedArg": t.variableName,

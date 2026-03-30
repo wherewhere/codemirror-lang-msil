@@ -4,26 +4,28 @@
 
 @precedence {
 	comma @left,
-	typeArgs @left
+	typeArgs @left,
+	classNameAssemblyPrefix @left,
+	typeSpecAssemblyOnly @left
 }
 
 @skip { newline | whitespace | LineComment | BlockComment }
 
-@external tokens dotTokens from "./tokens" { dotIdentifier }
+@external tokens dotTokens from './tokens' { dotIdentifier }
 
 @tokens {
 	// Line terminators
 	
 	newline {
 		$[\r\n\u0085\u2028\u2029]
-		| "\r\n"
+		| '\r\n'
 	}
 
 	// Comments
 	
-	LineComment { "//" ![\r\n\u0085\u2028\u2029]* }
+	LineComment { '//' ![\r\n\u0085\u2028\u2029]* }
 
-	BlockComment { "/*" (![\*] | "*" ![/])* "*/"? }
+	BlockComment { '/*' (![\*] | '*' ![/])* '*/'? }
 
 	@precedence { LineComment, BlockComment, '/' }
 
@@ -43,14 +45,14 @@
 	}
 
 	ByteLiteral {
-		hexDigit
+		hexDigit+
 	}
 
-	decimalInteger { decimalDigit }
+	decimalInteger { decimalDigit+ }
 
 	decimalDigit { @digit }
 
-	hexadecimalInteger { '0' $[xX] hexDigit }
+	hexadecimalInteger { '0' $[xX] hexDigit+ }
 	
 	hexDigit { $[0-9A-Fa-f] }
 
@@ -67,10 +69,12 @@
 	// Boolean literals
 
 	BooleanLiteral {
-		"true" | "false"
+		'true' | 'false'
 	}
 
-	exponentPart { $[eE] $[+\-]? decimalDigit }
+	@precedence { ByteLiteral, BooleanLiteral, identifier }
+
+	exponentPart { $[eE] $[+\-]? decimalDigit+ }
 
 	// Character literals
 
@@ -85,13 +89,13 @@
 
 	singleCharacter { !['\\\r\n\u0085\u2028\u2029] }
 
-	simpleEscapeSequence { "\\" $['"\\0abfnrtv] }
+	simpleEscapeSequence { '\\' $['"\\0abfnrtv] }
 	
-	hexadecimalEscapeSequence { "\\x" hexDigit hexDigit? hexDigit? hexDigit? }
+	hexadecimalEscapeSequence { '\\x' hexDigit hexDigit? hexDigit? hexDigit? }
 
 	unicodeEscapeSequence {
-		"\\u" hexDigit hexDigit hexDigit hexDigit
-		| "\\U" hexDigit hexDigit hexDigit hexDigit hexDigit hexDigit hexDigit hexDigit
+		'\\u' hexDigit hexDigit hexDigit hexDigit
+		| '\\U' hexDigit hexDigit hexDigit hexDigit hexDigit hexDigit hexDigit hexDigit
 	}
 
 	// String literals
@@ -110,6 +114,25 @@
 	}
 
 	singleRegularStringCharacter { !["\\\r\n\u0085\u2028\u2029] }
+
+	// Operators and punctuators
+
+	'{' '}' '[' ']' '(' ')' '.' ',' ':' ';'
+	'+' '-' '*'[@name=Astrisk] '/'[@name=Slash] '&' '|' '!'[@name=Not]
+	'=' '<' '>' '::'
+	'...'
+
+	// General
+
+	P_DEFINE { '#define' }
+	P_UNDEF { '#undef' }
+	P_IFDEF { '#ifdef' }
+	P_IFNDEF { '#ifndef' }
+	P_ELSE { '#else' }
+	P_ENDIF { '#endif' }
+	P_INCLUDE { '#include' }
+
+	P_LINE { '#line' }
 }
 
 // General
@@ -123,7 +146,7 @@ FieldName {
 }
 
 dottedFieldName {
-	dottedNameT<FieldName>
+	dottedNameOf<FieldName>
 }
 
 // Compilation unit
@@ -135,8 +158,34 @@ compilationUnit {
 memberDecl {
 	classDecl
 	| namespaceDecl
+	| methodDecl
 	| fieldDecl
+	| dataDecl
+//	| vtableDecl
+//	| vtfixupDecl
+	| extSourceSpec
+	| fileDecl
+	| assemblyDecl
+	| assemblyRefDecl
+//	| exptypeHead '{' exptypeDecls '}'
+//	| manifestResHead '{' manifestResDecls '}'
+//	| moduleHead
+	| secDecl
+	| customAttrDecl
+	| dkw<'.subsystem'> int32
+	| dkw<'.corflags'> int32
+	| dkw<'.file'> kw<'alignment'> int32
+	| dkw<'.imagebase'> int64
+	| dkw<'.stackreserve'> int64
 	| languageDecl
+//	| typedefDecl
+	| compControl
+	| dkw<'.typelist'> '{' classNameSeq '}'
+	| dkw<'.mscorlib'>
+}
+
+classNameSeq {
+	className*
 }
 
 /* Module-level declarations */
@@ -175,12 +224,89 @@ id {
 	idt<TypeIdentifier>
 }
 
-dottedNameT<type> {
+dottedNameOf<type> {
 	sep1<idt<type>, '.'>
 }
 
 dottedName {
-	dottedNameT<TypeIdentifier>
+	dottedNameOf<TypeIdentifier>
+}
+
+int32 {
+	IntegerLiteral
+}
+
+int64 {
+	int32
+}
+
+float64 {
+	RealLiteral
+	| kw<'float32'> '(' int32 ')'
+	| kw<'float64'> '(' int64 ')'
+}
+
+/* Compilation control directives are processed within yylex(), displayed here just for grammar completeness */
+compControl	{
+	P_DEFINE dottedName
+	| P_DEFINE dottedName compQstring
+	| P_UNDEF dottedName
+	| P_IFDEF dottedName
+	| P_IFNDEF dottedName
+	| P_ELSE
+	| P_ENDIF
+	| P_INCLUDE QSTRING
+	| ';'
+}
+
+/* Custom attribute declarations */
+customDescr {
+	dkw<'.custom'> customType ('=' (compQstring | ('{' customBlobDescr '}') | bytes))?
+}
+
+customDescrWithOwner {
+	dkw<'.custom'> '(' ownerType ')' customType ('=' (compQstring | ('{' customBlobDescr '}') | bytes))?
+}
+
+customType {
+	methodRef
+}
+
+ownerType {
+	typeSpec
+	| memberRef
+}
+
+/* Verbal description of custom attribute initialization blob */
+customBlobDescr {
+	customBlobArgs customBlobNVPairs
+}
+
+customBlobArgs {
+	(serInit | compControl)+
+}
+
+customBlobNVPairs {
+	(fieldOrProp serializType dottedName '=' serInit)*
+}
+
+fieldOrProp {
+	kw<'field'>
+	| kw<'property'>
+}
+
+customAttrDecl {
+	customDescr
+	| customDescrWithOwner
+}
+
+serializType {
+	simpleType
+	| kw<'type'>
+	| kw<'object'>
+ 	| kw<'enum'> kw<'class'> SQSTRING
+	| kw<'enum'> className
+	| serializType '[' ']'
 }
 
 /* Namespace and class declaration */
@@ -225,7 +351,7 @@ classAttr {
 	| kw<'beforefieldinit'>
 	| kw<'specialname'>
 	| kw<'rtspecialname'>
-	| kw<'flags'> '(' IntegerLiteral ')'
+	| kw<'flags'> '(' int32 ')'
 }
 
 extendsClause {
@@ -254,12 +380,20 @@ typarAttrib {
 	| kw<'valuetype'>
 	| kw<'byreflike'>
 	| dkw<'.ctor'>
-	| kw<'flags'> '(' IntegerLiteral ')'
+	| kw<'flags'> '(' int32 ')'
 }
 
 typars { csep1<(typarAttrib* (tyBound ('+'|'-')?)? dottedName)> }
 
 tyBound { '(' typeList ')' }
+
+genArity {
+	genArityNotEmpty?
+}
+
+genArityNotEmpty {
+	'<' '[' int32 ']' '>'
+}
 
 /* Class body declarations */
 classBody {
@@ -267,8 +401,25 @@ classBody {
 }
 
 classMemberDecl {
-	classDecl
+	methodDecl
+	| classDecl
+	| eventDecl
+	| propDecl
 	| fieldDecl
+	| dataDecl
+	| secDecl
+	| extSourceSpec
+	| customAttrDecl
+	| dkw<'.size'> int32
+	| dkw<'.pack'> int32
+//	| exportHead '{' exptypeDecls '}'
+	| dkw<'.override'> typeSpec '::' methodName kw<'with'> callConv type typeSpec '::' methodName '(' sigArgs0 ')'
+	| dkw<'.override'> kw<'method'> callConv type typeSpec '::' methodName genArity '(' sigArgs0 ')' kw<'with'> kw<'method'> callConv type typeSpec '::' methodName genArity '(' sigArgs0 ')'
+	| languageDecl
+	| compControl
+	| dkw<'.param'> kw<'type'> (('[' int32 ']') | dottedName)
+	| dkw<'.param'> kw<'constraint'> (('[' int32 ']') | dottedName) ',' typeSpec
+	| dkw<'.interfaceimpl'> kw<'type'> typeSpec customDescr
 }
 
 /* Field declaration */
@@ -296,7 +447,7 @@ fieldAttr {
 	| kw<'privatescope'>
 	| kw<'literal'>
 	| kw<'notserialized'>
-	| kw<'flags'> '(' IntegerLiteral ')'
+	| kw<'flags'> '(' int32 ')'
 }
 
 atOpt {
@@ -308,15 +459,21 @@ initOpt {
 }
 
 repeatOpt {
-	'[' IntegerLiteral ']'
+	'[' int32 ']'
 }
 
 /* Method referencing */
+methodRef {
+	callConv type typeSpec '::' methodName (tyArgs0 | genArityNotEmpty) '(' sigArgs0 ')'
+	| callConv type methodName (tyArgs0 | genArityNotEmpty) '(' sigArgs0 ')'
+	| mdtoken
+}
+
 callConv {
 	kw<'instance'> callConv
 	| kw<'explicit'> callConv
 	| callKind?
-	| kw<'callconv'> '(' IntegerLiteral ')'
+	| kw<'callconv'> '(' int32 ')'
 }
 
 callKind {
@@ -325,36 +482,279 @@ callKind {
 }
 
 mdtoken {
-	kw<'mdtoken'> '(' IntegerLiteral ')'
+	kw<'mdtoken'> '(' int32 ')'
+}
+
+memberRef {
+	methodSpec methodRef
+	| kw<'field'> type dottedName
+	| kw<'field'> type typeSpec '::' dottedName
+}
+
+/* Event declaration */
+eventDecl {
+	dkw<'.event'> eventAttr* typeSpec? dottedName eventBody
+}
+
+eventAttr {
+	kw<'rtspecialname'>
+	| kw<'specialname'>
+}
+
+eventBody {
+	delim<'{' eventBodyDecl* '}'>
+}
+
+eventBodyDecl {
+	dkw<'.addon'> methodRef
+	| dkw<'.removeon'> methodRef
+	| dkw<'.fire'> methodRef
+	| dkw<'.other'> methodRef
+	| extSourceSpec
+	| customAttrDecl
+	| languageDecl
+	| compControl
+}
+
+/* Property declaration */
+propDecl {
+	dkw<'.property'> propAttr* callConv type dottedName '(' sigArgs0 ')' initOpt? propBody
+}
+
+propAttr {
+	kw<'rtspecialname'>
+	| kw<'specialname'>
+}
+
+propBody {
+	delim<'{' propBodyDecl* '}'>
+}
+
+propBodyDecl {
+	dkw<'.set'> methodRef
+	| dkw<'.get'> methodRef
+	| dkw<'.other'> methodRef
+	| customAttrDecl
+	| extSourceSpec
+	| languageDecl
+	| compControl
 }
 
 /* Method declaration */
+methodDecl {
+	dkw<'.method'> methAttr* callConv paramAttr* type marshalClause? methodName typarsClause '(' sigArgs0 ')' implAttr* methodBody
+}
+
+marshalClause {
+	kw<'marshal'> '(' marshalBlob ')'
+}
+
+methAttr {
+	kw<'static'>
+	| kw<'public'>
+	| kw<'private'>
+	| kw<'family'>
+	| kw<'final'>
+	| kw<'specialname'>
+	| kw<'virtual'>
+	| kw<'strict'>
+	| kw<'abstract'>
+	| kw<'assembly'>
+	| kw<'famandassem'>
+	| kw<'famorassem'>
+	| kw<'privatescope'>
+	| kw<'hidebysig'>
+	| kw<'newslot'>
+	| kw<'rtspecialname'>
+	| kw<'unmanagedexp'>
+	| kw<'reqsecobj'>
+	| kw<'flags'> '(' int32 ')'
+	| kw<'pinvokeimpl'> '(' (compQstring (kw<'as'> compQstring)?)? pinvAttr* ')'
+}
+
+pinvAttr {
+	kw<'nomangle'>
+	| kw<'ansi'>
+	| kw<'unicode'>
+	| kw<'autochar'>
+	| kw<'lasterr'>
+	| kw<'winapi'>
+	| kw<'cdecl'>
+	| kw<'stdcall'>
+	| kw<'thiscall'>
+	| kw<'fastcall'>
+	| (kw<'bestfit'> | kw<'charmaperror'>) ':' (kw<'on'> | kw<'off'>)
+	| kw<'flags'> '(' int32 ')'
+}
+
 marshalBlob {
 	nativeType?
 	| '{' ByteLiteral+ '}'
 }
 
+methodName {
+	dkw<'.ctor'>
+	| dkw<'.cctor'>
+	| dottedName
+}
+
+paramAttr {
+	'[' kw<'in'> ']'
+	| '[' kw<'out'> ']'
+	| '[' kw<'opt'> ']'
+	| '[' int32 ']'
+}
+
+implAttr {
+	kw<'native'>
+	| kw<'cil'>
+	| kw<'optil'>
+	| kw<'managed'>
+	| kw<'unmanaged'>
+	| kw<'forwardref'>
+	| kw<'preservesig'>
+	| kw<'runtime'>
+	| kw<'internalcall'>
+	| kw<'synchronized'>
+	| kw<'noinlining'>
+	| kw<'aggressiveinlining'>
+	| kw<'nooptimization'>
+	| kw<'aggressiveoptimization'>
+	| kw<'async'>
+	| kw<'flags'> '(' int32 ')'
+}
+
+methodBody {
+	delim<'{' methodBodyDecl* '}'>
+}
+
+methodBodyDecl {
+	dkw<'.emitbyte'> int32
+	| sehBlock
+	| dkw<'.maxstack'> int32
+	| dkw<'.locals'> kw<'init'>? '(' sigArgs0 ')'
+	| dkw<'.entrypoint'>
+	| dkw<'.zeroinit'>
+	| dataDecl
+	| instr
+	| id ':'
+	| secDecl
+	| extSourceSpec
+	| languageDecl
+	| customAttrDecl
+	| compControl
+	| dkw<'.export'> '[' int32 ']' (kw<'as'> id)?
+	| dkw<'.vtentry'> int32 ':' int32
+	| dkw<'.override'> typeSpec '::' methodName
+
+	| dkw<'.override'> kw<'method'> callConv type typeSpec '::' methodName genArity '(' sigArgs0 ')'
+	| scopeBlock
+	| dkw<'.param'> kw<'type'> '[' int32 ']'
+	| dkw<'.param'> kw<'type'> dottedName
+	| dkw<'.param'> kw<'constraint'> '[' int32 ']' ',' typeSpec
+	| dkw<'.param'> kw<'constraint'> dottedName ',' typeSpec
+
+	| dkw<'.param'> '[' int32 ']' initOpt
+}
+
+scopeBlock {
+	methodBody
+}
+
+/* Structured exception handling directives */
+sehBlock {
+	tryBlock sehClause+
+}
+
+tryBlock {
+	dkw<'.try'> scopeBlock
+	| dkw<'.try'> id kw<'to'> id
+	| dkw<'.try'> int32 kw<'to'> int32
+}
+
+sehClause {
+	catchClause handlerBlock
+	| kw<'filter'> handlerBlock
+	| kw<'finally'> handlerBlock
+	| kw<'fault'> handlerBlock
+}
+
+catchClause {
+	kw<'catch'> typeSpec
+}
+
+handlerBlock {
+	scopeBlock
+	| kw<'handler'> id kw<'to'> id
+	| kw<'handler'> int32 kw<'to'> int32
+}
+
+/* Data declaration */
+dataDecl {
+	dkw<'.data'> tls? (id '=')? ddBody
+}
+
+tls {
+	kw<'tls'>
+	| kw<'cil'>
+}
+
+ddBody {
+	'{' ddItemList '}'
+	| ddItem
+}
+
+ddItemList {
+	csep1<ddItem>
+}
+
+ddItemCount {
+	'[' int32 ']'
+}
+
+ddItem {
+	kw<'char'> '*' '(' compQstring ')'
+	| '&' '(' id ')'
+	| kw<'bytearray'> '(' bytes ')'
+	| kw<'float32'> '(' float64 ')' ddItemCount?
+	| kw<'float64'> '(' float64 ')' ddItemCount?
+	| kw<'int64'> '(' int64 ')' ddItemCount?
+	| kw<'int32'> '(' int32 ')' ddItemCount?
+	| kw<'int16'> '(' int32 ')' ddItemCount?
+	| kw<'int8'> '(' int32 ')' ddItemCount?
+	| kw<'float32'> ddItemCount?
+	| kw<'float64'> ddItemCount?
+	| kw<'int64'> ddItemCount?
+	| kw<'int32'> ddItemCount?
+	| kw<'int16'> ddItemCount?
+	| kw<'int8'> ddItemCount?
+}
+
 /* Default values declaration for fields, parameters and verbal form of CA blob description */
 fieldSerInit {
-	kw<'float32'> '(' RealLiteral ')'
-	| kw<'float64'> '(' RealLiteral ')'
-	| kw<'float32'> '(' IntegerLiteral ')'
-	| kw<'float64'> '(' IntegerLiteral ')'
-	| kw<'int64'> '(' IntegerLiteral ')'
-	| kw<'int32'> '(' IntegerLiteral ')'
-	| kw<'int16'> '(' IntegerLiteral ')'
-	| kw<'int8'> '(' IntegerLiteral ')'
-	| kw<'unsigned'> kw<'int64'> '(' IntegerLiteral ')'
-	| kw<'unsigned'> kw<'int32'> '(' IntegerLiteral ')'
-	| kw<'unsigned'> kw<'int16'> '(' IntegerLiteral ')'
-	| kw<'unsigned'> kw<'int8'> '(' IntegerLiteral ')'
-	| kw<'uint64'> '(' IntegerLiteral ')'
-	| kw<'uint32'> '(' IntegerLiteral ')'
-	| kw<'uint16'> '(' IntegerLiteral ')'
-	| kw<'uint8'> '(' IntegerLiteral ')'
-	| kw<'char'> '(' IntegerLiteral ')'
-	| kw<'bool'> '(' BooleanLiteral ')'
-	| kw<'bytearray'> '(' ByteLiteral ')'
+	kw<'float32'> '(' float64 ')'
+	| kw<'float64'> '(' float64 ')'
+	| kw<'float32'> '(' int32 ')'
+	| kw<'float64'> '(' int64 ')'
+	| kw<'int64'> '(' int64 ')'
+	| kw<'int32'> '(' int32 ')'
+	| kw<'int16'> '(' int32 ')'
+	| kw<'int8'> '(' int32 ')'
+	| kw<'unsigned'> kw<'int64'> '(' int64 ')'
+	| kw<'unsigned'> kw<'int32'> '(' int32 ')'
+	| kw<'unsigned'> kw<'int16'> '(' int32 ')'
+	| kw<'unsigned'> kw<'int8'> '(' int32 ')'
+	| kw<'uint64'> '(' int64 ')'
+	| kw<'uint32'> '(' int32 ')'
+	| kw<'uint16'> '(' int32 ')'
+	| kw<'uint8'> '(' int32 ')'
+	| kw<'char'> '(' int32 ')'
+	| kw<'bool'> '(' truefalse ')'
+	| kw<'bytearray'> '(' bytes ')'
+}
+
+bytes {
+	ByteLiteral+
 }
 
 /* Field/parameter initialization */
@@ -364,10 +764,380 @@ fieldInit {
 	| kw<'nullref'>
 }
 
+/* Values for verbal form of CA blob description */
+serInit {
+	fieldSerInit
+	| kw<'string'> '(' kw<'nullref'> ')'
+	| kw<'string'> '(' SQSTRING ')'
+	| kw<'type'> '(' kw<'class'> SQSTRING ')'
+	| kw<'type'> '(' className ')'
+	| kw<'type'> '(' kw<'nullref'> ')'
+	| kw<'object'> '(' serInit ')'
+	| kw<'float32'> '[' int32 ']' '(' f32seq ')'
+	| kw<'float64'> '[' int32 ']' '(' f64seq ')'
+	| kw<'int64'> '[' int32 ']' '(' i64seq ')'
+	| kw<'int32'> '[' int32 ']' '(' i32seq ')'
+	| kw<'int16'> '[' int32 ']' '(' i16seq ')'
+	| kw<'int8'> '[' int32 ']' '(' i8seq ')'
+	| kw<'uint64'> '[' int32 ']' '(' i64seq ')'
+	| kw<'uint32'> '[' int32 ']' '(' i32seq ')'
+	| kw<'uint16'> '[' int32 ']' '(' i16seq ')'
+	| kw<'uint8'> '[' int32 ']' '(' i8seq ')'
+	| kw<'unsigned'> kw<'int64'> '[' int32 ']' '(' i64seq ')'
+	| kw<'unsigned'> kw<'int32'> '[' int32 ']' '(' i32seq ')'
+	| kw<'unsigned'> kw<'int16'> '[' int32 ']' '(' i16seq ')'
+	| kw<'unsigned'> kw<'int8'> '[' int32 ']' '(' i8seq ')'
+	| kw<'char'> '[' int32 ']' '(' i16seq ')'
+	| kw<'bool'> '[' int32 ']' '(' boolSeq ')'
+	| kw<'string'> '[' int32 ']' '(' sqstringSeq ')'
+	| kw<'type'> '[' int32 ']' '(' classSeq ')'
+	| kw<'object'> '[' int32 ']' '(' objSeq ')'
+}
+
+f32seq {
+	(float64 | int32)*
+}
+
+f64seq {
+	(float64 | int64)*
+}
+
+i64seq {
+	int64*
+}
+
+i32seq {
+	int32*
+}
+
+i16seq {
+	int32*
+}
+
+i8seq {
+	int32*
+}
+
+boolSeq {
+	truefalse*
+}
+
+sqstringSeq {
+	(kw<'nullref'> | SQSTRING)*
+}
+
+classSeq {
+	(kw<'nullref'>
+	| kw<'class'> SQSTRING
+	| className)*
+}
+
+objSeq {
+	serInit*
+}
+
 /* IL instructions and associated definitions */
 methodSpec { kw<'method'> }
 
+instr_none {
+	kw<'nop'>
+	| kw<'break'>
+	| kw<'ldarg'> '.' '0'
+	| kw<'ldarg'> '.' '1'
+	| kw<'ldarg'> '.' '2'
+	| kw<'ldarg'> '.' '3'
+	| kw<'ldloc'> '.' '0'
+	| kw<'ldloc'> '.' '1'
+	| kw<'ldloc'> '.' '2'
+	| kw<'ldloc'> '.' '3'
+	| kw<'stloc'> '.' '0'
+	| kw<'stloc'> '.' '1'
+	| kw<'stloc'> '.' '2'
+	| kw<'stloc'> '.' '3'
+	| kw<'ldnull'>
+	| kw<'ldc'> '.' kw<'i4'> '.' kw<'m1'>
+	| kw<'ldc'> '.' kw<'i4'> '.' '0'
+	| kw<'ldc'> '.' kw<'i4'> '.' '1'
+	| kw<'ldc'> '.' kw<'i4'> '.' '2'
+	| kw<'ldc'> '.' kw<'i4'> '.' '3'
+	| kw<'ldc'> '.' kw<'i4'> '.' '4'
+	| kw<'ldc'> '.' kw<'i4'> '.' '5'
+	| kw<'ldc'> '.' kw<'i4'> '.' '6'
+	| kw<'ldc'> '.' kw<'i4'> '.' '7'
+	| kw<'ldc'> '.' kw<'i4'> '.' '8'
+	| kw<'dup'>
+	| kw<'pop'>
+	| kw<'ret'>
+	| kw<'ldind'> '.' kw<'i1'>
+	| kw<'ldind'> '.' kw<'u1'>
+	| kw<'ldind'> '.' kw<'i2'>
+	| kw<'ldind'> '.' kw<'u2'>
+	| kw<'ldind'> '.' kw<'i4'>
+	| kw<'ldind'> '.' kw<'u4'>
+	| kw<'ldind'> '.' kw<'i8'>
+	| kw<'ldind'> '.' kw<'i'>
+	| kw<'ldind'> '.' kw<'r4'>
+	| kw<'ldind'> '.' kw<'r8'>
+	| kw<'ldind'> '.' kw<'ref'>
+	| kw<'stind'> '.' kw<'ref'>
+	| kw<'stind'> '.' kw<'i1'>
+	| kw<'stind'> '.' kw<'i2'>
+	| kw<'stind'> '.' kw<'i4'>
+	| kw<'stind'> '.' kw<'i8'>
+	| kw<'stind'> '.' kw<'r4'>
+	| kw<'stind'> '.' kw<'r8'>
+	| kw<'add'>
+	| kw<'sub'>
+	| kw<'mul'>
+	| kw<'div'>
+	| kw<'div'> '.' kw<'un'>
+	| kw<'rem'>
+	| kw<'rem'> '.' kw<'un'>
+	| kw<'and'>
+	| kw<'or'>
+	| kw<'xor'>
+	| kw<'shl'>
+	| kw<'shr'>
+	| kw<'shr'> '.' kw<'un'>
+	| kw<'neg'>
+	| kw<'not'>
+	| kw<'conv'> '.' kw<'i1'>
+	| kw<'conv'> '.' kw<'i2'>
+	| kw<'conv'> '.' kw<'i4'>
+	| kw<'conv'> '.' kw<'i8'>
+	| kw<'conv'> '.' kw<'r4'>
+	| kw<'conv'> '.' kw<'r8'>
+	| kw<'conv'> '.' kw<'u4'>
+	| kw<'conv'> '.' kw<'u8'>
+	| kw<'conv'> '.' kw<'r'> '.' kw<'un'>
+	| kw<'throw'>
+	| kw<'conv'> '.' kw<'ovf'> '.' kw<'i1'> '.' kw<'un'>
+	| kw<'conv'> '.' kw<'ovf'> '.' kw<'i2'> '.' kw<'un'>
+	| kw<'conv'> '.' kw<'ovf'> '.' kw<'i4'> '.' kw<'un'>
+	| kw<'conv'> '.' kw<'ovf'> '.' kw<'i8'> '.' kw<'un'>
+	| kw<'conv'> '.' kw<'ovf'> '.' kw<'u1'> '.' kw<'un'>
+	| kw<'conv'> '.' kw<'ovf'> '.' kw<'u2'> '.' kw<'un'>
+	| kw<'conv'> '.' kw<'ovf'> '.' kw<'u4'> '.' kw<'un'>
+	| kw<'conv'> '.' kw<'ovf'> '.' kw<'u8'> '.' kw<'un'>
+	| kw<'conv'> '.' kw<'ovf'> '.' kw<'i'> '.' kw<'un'>
+	| kw<'conv'> '.' kw<'ovf'> '.' kw<'u'> '.' kw<'un'>
+	| kw<'ldlen'>
+	| kw<'ldelem'> '.' kw<'i1'>
+	| kw<'ldelem'> '.' kw<'u1'>
+	| kw<'ldelem'> '.' kw<'i2'>
+	| kw<'ldelem'> '.' kw<'u2'>
+	| kw<'ldelem'> '.' kw<'i4'>
+	| kw<'ldelem'> '.' kw<'u4'>
+	| kw<'ldelem'> '.' kw<'i8'>
+	| kw<'ldelem'> '.' kw<'i'>
+	| kw<'ldelem'> '.' kw<'r4'>
+	| kw<'ldelem'> '.' kw<'r8'>
+	| kw<'ldelem'> '.' kw<'ref'>
+	| kw<'stelem'> '.' kw<'i'>
+	| kw<'stelem'> '.' kw<'i1'>
+	| kw<'stelem'> '.' kw<'i2'>
+	| kw<'stelem'> '.' kw<'i4'>
+	| kw<'stelem'> '.' kw<'i8'>
+	| kw<'stelem'> '.' kw<'r4'>
+	| kw<'stelem'> '.' kw<'r8'>
+	| kw<'stelem'> '.' kw<'ref'>
+	| kw<'conv'> '.' kw<'ovf'> '.' kw<'i1'>
+	| kw<'conv'> '.' kw<'ovf'> '.' kw<'u1'>
+	| kw<'conv'> '.' kw<'ovf'> '.' kw<'i2'>
+	| kw<'conv'> '.' kw<'ovf'> '.' kw<'u2'>
+	| kw<'conv'> '.' kw<'ovf'> '.' kw<'i4'>
+	| kw<'conv'> '.' kw<'ovf'> '.' kw<'u4'>
+	| kw<'conv'> '.' kw<'ovf'> '.' kw<'i8'>
+	| kw<'conv'> '.' kw<'ovf'> '.' kw<'u8'>
+	| kw<'ckfinite'>
+	| kw<'conv'> '.' kw<'u2'>
+	| kw<'conv'> '.' kw<'u1'>
+	| kw<'conv'> '.' kw<'i'>
+	| kw<'conv'> '.' kw<'ovf'> '.' kw<'i'>
+	| kw<'conv'> '.' kw<'ovf'> '.' kw<'u'>
+	| kw<'add'> '.' kw<'ovf'>
+	| kw<'add'> '.' kw<'ovf'> '.' kw<'un'>
+	| kw<'mul'> '.' kw<'ovf'>
+	| kw<'mul'> '.' kw<'ovf'> '.' kw<'un'>
+	| kw<'sub'> '.' kw<'ovf'>
+	| kw<'sub'> '.' kw<'ovf'> '.' kw<'un'>
+	| kw<'endfinally'>
+	| kw<'stind'> '.' kw<'i'>
+	| kw<'conv'> '.' kw<'u'>
+	| kw<'prefix7'>
+	| kw<'prefix6'>
+	| kw<'prefix5'>
+	| kw<'prefix4'>
+	| kw<'prefix3'>
+	| kw<'prefix2'>
+	| kw<'prefix1'>
+	| kw<'prefixref'>
+	| kw<'arglist'>
+	| kw<'ceq'>
+	| kw<'cgt'>
+	| kw<'cgt'> '.' kw<'un'>
+	| kw<'clt'>
+	| kw<'clt'> '.' kw<'un'>
+	| kw<'localloc'>
+	| kw<'endfilter'>
+	| kw<'volatile'> '.'
+	| kw<'tail'> '.'
+	| kw<'cpblk'>
+	| kw<'initblk'>
+	| kw<'rethrow'>
+	| kw<'refanytype'>
+	| kw<'readonly'> '.'
+	| kw<'illegal'>
+	| kw<'endmac'>
+}
+
+instr_var {
+	kw<'ldarg'> '.' kw<'s'>
+	| kw<'ldarga'> '.' kw<'s'>
+	| kw<'starg'> '.' kw<'s'>
+	| kw<'ldloc'> '.' kw<'s'>
+	| kw<'ldloca'> '.' kw<'s'>
+	| kw<'stloc'> '.' kw<'s'>
+	| kw<'ldarg'>
+	| kw<'ldarga'>
+	| kw<'starg'>
+	| kw<'ldloc'>
+	| kw<'ldloca'>
+	| kw<'stloc'>
+}
+
+instr_i {
+	kw<'ldc'> '.' kw<'i4'> '.' kw<'s'>
+	| kw<'ldc'> '.' kw<'i4'>
+	| kw<'unaligned'> '.'
+	| kw<'no'> '.'
+}
+
+instr_i8 {
+	kw<'ldc'> '.' kw<'i8'>
+}
+
+instr_r {
+	kw<'ldc'> '.' kw<'r4'>
+	| kw<'ldc'> '.' kw<'r8'>
+}
+
+instr_brtarget {
+	kw<'br'> '.' kw<'s'>
+	| kw<'brfalse'> '.' kw<'s'>
+	| kw<'brtrue'> '.' kw<'s'>
+	| kw<'beq'> '.' kw<'s'>
+	| kw<'bge'> '.' kw<'s'>
+	| kw<'bgt'> '.' kw<'s'>
+	| kw<'ble'> '.' kw<'s'>
+	| kw<'blt'> '.' kw<'s'>
+	| kw<'bne'> '.' kw<'un'> '.' kw<'s'>
+	| kw<'bge'> '.' kw<'un'> '.' kw<'s'>
+	| kw<'bgt'> '.' kw<'un'> '.' kw<'s'>
+	| kw<'ble'> '.' kw<'un'> '.' kw<'s'>
+	| kw<'blt'> '.' kw<'un'> '.' kw<'s'>
+	| kw<'br'>
+	| kw<'brfalse'>
+	| kw<'brtrue'>
+	| kw<'beq'>
+	| kw<'bge'>
+	| kw<'bgt'>
+	| kw<'ble'>
+	| kw<'blt'>
+	| kw<'bne.un'>
+	| kw<'bge.un'>
+	| kw<'bgt.un'>
+	| kw<'ble.un'>
+	| kw<'blt.un'>
+	| kw<'leave'>
+	| kw<'leave'> '.' kw<'s'>
+}
+
+instr_method {
+	kw<'jmp'>
+	| kw<'call'>
+	| kw<'callvirt'>
+	| kw<'newobj'>
+	| kw<'ldftn'>
+	| kw<'ldvirtftn'>
+}
+
+instr_field {
+	kw<'ldfld'>
+	| kw<'ldflda'>
+	| kw<'stfld'>
+	| kw<'ldsfld'>
+	| kw<'ldsflda'>
+	| kw<'stsfld'>
+}
+
+instr_type {
+	kw<'cpobj'>
+	| kw<'ldobj'>
+	| kw<'castclass'>
+	| kw<'isinst'>
+	| kw<'unbox'>
+	| kw<'stobj'>
+	| kw<'box'>
+	| kw<'newarr'>
+	| kw<'ldelema'>
+	| kw<'ldelem'>
+	| kw<'stelem'>
+	| kw<'unbox.any'>
+	| kw<'refanyval'>
+	| kw<'mkrefany'>
+	| kw<'initobj'>
+	| kw<'constrained.'>
+	| kw<'sizeof'>
+}
+
+instr_string {
+	kw<'ldstr'>
+}
+
+instr_sig {
+	kw<'calli'>
+}
+
+instr_tok {
+	kw<'ldtoken'>
+}
+
+instr_switch {
+	kw<'switch'>
+}
+
+instr {
+	instr_none
+	| instr_var int32
+	| instr_var id
+	| instr_i int32
+	| instr_i8 int64
+	| instr_r float64
+	| instr_r int64
+	| instr_r '(' bytes ')'
+	| instr_brtarget int32
+	| instr_brtarget id
+	| instr_method methodRef
+	| instr_field type typeSpec '::' dottedName
+	| instr_field type dottedName
+	| instr_field mdtoken
+	| instr_type typeSpec
+	| instr_string compQstring
+	| instr_string kw<'ansi'> '(' compQstring ')'
+	| instr_string kw<'bytearray'> '(' bytes ')'
+	| instr_sig callConv type '(' sigArgs0 ')'
+	| instr_tok ownerType /* ownerType ::= memberRef | typeSpec */
+	| instr_switch '(' labels ')'
+}
+
+labels {
+	csep0<(id | int32)>
+}
+
 /* Signatures */
+tyArgs0 { ('<' tyArgs1 '>')? }
+
 tyArgs1 { tyArgs2 }
 
 tyArgs2 { csep1<type> }
@@ -376,16 +1146,15 @@ sigArgs0 { csep0<sigArg> }
 
 sigArg {
 	'...'
-	//| paramAttr type marshalClause
-	//| paramAttr type marshalClause id
+	| paramAttr* type marshalClause? id?
 }
 
 /* Class referencing */
 className {
-	'[' dottedName ']' slashedName
+	'[' dottedName ']' !classNameAssemblyPrefix slashedName
 	| '[' mdtoken ']' slashedName
 	| '[' '*' ']' slashedName
-	| '[' dkw<'.module'> dottedName ']' slashedName
+	| '[' dkw<'.module'> dottedName ']' !classNameAssemblyPrefix slashedName
 	| slashedName
 	| mdtoken
 	| dkw<'.this'>
@@ -399,16 +1168,16 @@ slashedName {
 
 typeSpec {
 	className
-	| '[' dottedName ']'
-	| '[' dkw<'.module'> dottedName ']'
+	| '[' dottedName ']' !typeSpecAssemblyOnly
+	| '[' dkw<'.module'> dottedName ']' !typeSpecAssemblyOnly
 	| type
 }
 
 /*  Native types for marshaling signatures  */
 nativeType {
 	kw<'custom'> '(' compQstring ',' compQstring (',' compQstring ',' compQstring)? ')'
-	| kw<'fixed'> kw<'sysstring'> '[' IntegerLiteral ']'
-	| kw<'fixed'> kw<'array'> '[' IntegerLiteral ']'
+	| kw<'fixed'> kw<'sysstring'> '[' int32 ']'
+	| kw<'fixed'> kw<'array'> '[' int32 ']'
 	| kw<'variant'>
 	| kw<'currency'>
 	| kw<'syschar'>
@@ -427,7 +1196,7 @@ nativeType {
 	| kw<'uint32'>
 	| kw<'uint64'>
 	| nativeType '*'
-	| nativeType '[' IntegerLiteral? ('+' IntegerLiteral)? ']'
+	| nativeType '[' int32? ('+' int32)? ']'
 	| kw<'decimal'>
 	| kw<'date'>
 	| kw<'bstr'>
@@ -452,7 +1221,7 @@ nativeType {
 }
 
 iidParamIndex {
-	'(' 'iidparam' '=' IntegerLiteral ')'
+	'(' 'iidparam' '=' int32 ')'
 }
 
 variantType {
@@ -511,7 +1280,7 @@ type {
 	| type !typeArgs (kw<'modreq'> | kw<'modopt'>) '(' typeSpec ')'
 	| methodSpec callConv type '*' '(' sigArgs0 ')'
 	| type !typeArgs '<' tyArgs1 '>'
-	| '!' '!'? (IntegerLiteral | dottedName)
+	| '!' '!'? (int32 | dottedName)
 	| kw<'native'> kw<'unsigned'>? kw<'int'>
 	| kw<'native'> kw<'uint'>
 	| simpleType
@@ -539,8 +1308,154 @@ bounds1 { csep1<bound> }
 
 bound {
 	'...'
-	| IntegerLiteral
-	| IntegerLiteral '...' IntegerLiteral?
+	| int32
+	| int32 '...' int32?
+}
+
+/* Security declarations */
+secDecl {
+	dkw<'.permission'> secAction typeSpec '(' nameValPairs ')'
+	| dkw<'.permission'> secAction typeSpec '=' '{' customBlobDescr '}'
+	| dkw<'.permission'> secAction typeSpec
+	| psetHead '(' bytes ')'
+	| dkw<'.permissionset'> secAction compQstring
+	| dkw<'.permissionset'> secAction '=' '{' secAttrSetBlob '}'
+}
+
+secAttrSetBlob {
+	csep0<secAttrBlob>
+}
+
+secAttrBlob {
+	typeSpec '=' '{' customBlobNVPairs '}'
+}
+
+psetHead {
+	dkw<'.permissionset'> secAction '=' 
+	| dkw<'.permissionset'> secAction kw<'bytearray'>
+}
+
+nameValPairs {
+	csep0<nameValPair>
+}
+
+nameValPair {
+	compQstring '=' caValue
+}
+
+truefalse {
+	BooleanLiteral
+}
+
+caValue {
+	truefalse
+	| int32
+	| kw<'int32'> '(' int32 ')'
+	| compQstring
+	| className '(' kw<'int8'> ':' int32 ')'
+	| className '(' kw<'int16'> ':' int32 ')'
+	| className '(' kw<'int32'> ':' int32 ')'
+	| className '(' int32 ')'
+}
+
+secAction {
+	kw<'request'>
+	| kw<'demand'>
+	| kw<'assert'>
+	| kw<'deny'>
+	| kw<'permitonly'>
+	| kw<'linkcheck'>
+	| kw<'inheritcheck'>
+	| kw<'reqmin'>
+	| kw<'reqopt'>
+	| kw<'reqrefuse'>
+	| kw<'prejitgrant'>
+	| kw<'prejitdeny'>
+	| kw<'noncasdemand'>
+	| kw<'noncaslinkdemand'>
+	| kw<'noncasinheritance'>
+}
+
+/* External source declarations */
+esHead {
+	dkw<'.line'>
+	| P_LINE
+}
+
+extSourceSpec {
+	esHead int32 (SQSTRING | QSTRING)
+	| esHead int32 ':' int32 SQSTRING
+	| esHead int32 ':' int32 ',' int32 SQSTRING
+	| esHead int32 ':' int32 ',' int32 ':' int32 SQSTRING
+	| esHead int32 ',' int32 ':' int32 SQSTRING
+}
+
+/* Manifest declarations */
+fileDecl {
+	dkw<'.file'> fileAttr* dottedName fileEntry? (dkw<'.hash'> '=' '(' bytes ')' fileEntry)?
+}
+
+fileAttr {
+	kw<'nometadata'>
+}
+
+fileEntry {
+	dkw<'.entrypoint'>
+}
+
+assemblyDecl {
+	dkw<'.assembly'> asmAttr* dottedName assemblyBody?
+}
+
+asmAttr {
+	kw<'retargetable'>
+	| kw<'windowsruntime'>
+	| kw<'noplatform'>
+	| kw<'legacy'> kw<'library'>
+	| kw<'cil'>
+	| kw<'x86'>
+	| kw<'amd64'>
+	| kw<'arm'>
+	| kw<'arm64'>
+}
+
+assemblyBody {
+	delim<'{' assemblyBodyDecl* '}'>
+}
+
+assemblyBodyDecl {
+	dkw<'.hash'> kw<'algorithm'> int32
+	| secDecl
+	| asmOrRefDecl
+}
+
+intOrWildcard {
+	int32
+	| '*'
+}
+
+asmOrRefDecl {
+	dkw<'.publickey'> '=' '(' bytes ')'
+	| dkw<'.ver'> intOrWildcard ':' intOrWildcard ':' intOrWildcard ':' intOrWildcard
+	| dkw<'.locale'> compQstring
+	| '.locale' '=' '(' bytes ')'
+	| customAttrDecl
+	| compControl
+}
+
+assemblyRefDecl {
+	dkw<'.assembly'> kw<'extern'> asmAttr* dottedName (kw<'as'> dottedName)? assemblyRefBody?
+}
+
+assemblyRefBody {
+	delim<'{' assemblyRefBodyDecl* '}'>
+}
+
+assemblyRefBodyDecl {
+	dkw<'.hash'> '=' '(' bytes ')'
+	| asmOrRefDecl
+	| dkw<'.publickeytoken'> '=' '(' bytes ')'
+	| kw<'auto'>
 }
 
 // Util

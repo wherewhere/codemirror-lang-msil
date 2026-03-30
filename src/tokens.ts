@@ -2,14 +2,10 @@ import { ExternalTokenizer } from "@lezer/lr";
 import { dotIdentifier } from "./syntax.grammar.terms";
 
 const CHAR_DOT = 46;
-const CHAR_0 = 48;
-const CHAR_9 = 57;
 const CHAR_A = 65;
 const CHAR_Z = 90;
-const CHAR_UNDERSCORE = 95;
 const CHAR_LOWER_A = 97;
 const CHAR_LOWER_Z = 122;
-const CHAR_BACKTICK = 96;
 
 const DOT_BOUNDARY_CHARS = new Set<number>([
 	123, // {
@@ -33,12 +29,8 @@ function isDotBoundaryBefore(c: number) {
 	return DOT_BOUNDARY_CHARS.has(c);
 }
 
-function isIdStart(c: number) {
-	return (c >= CHAR_A && c <= CHAR_Z) || (c >= CHAR_LOWER_A && c <= CHAR_LOWER_Z) || c === CHAR_UNDERSCORE;
-}
-
-function isIdContinue(c: number) {
-	return isIdStart(c) || (c >= CHAR_0 && c <= CHAR_9) || c === CHAR_BACKTICK;
+function isLetter(c: number) {
+	return (c >= CHAR_A && c <= CHAR_Z) || (c >= CHAR_LOWER_A && c <= CHAR_LOWER_Z);
 }
 
 // Contextual tokenizer for dot-prefixed directive identifiers (.class, .namespace, …).
@@ -53,9 +45,9 @@ export const dotTokens = new ExternalTokenizer(input => {
 
 	let offset = 1;
 	let first = input.peek(offset);
-	if (!isIdStart(first)) { return; }
+	if (!isLetter(first)) { return; }
 
-	while (isIdContinue(first)) {
+	while (isLetter(first)) {
 		offset++;
 		first = input.peek(offset);
 	}
