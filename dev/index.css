@@ -50,3 +50,13 @@ div.split-view #syntax pre {
         height: 50%;
     }
 }
+
+.cm-tooltip-section {
+    padding: 3px 8px;
+    white-space: pre-wrap;
+    font-family: monospace;
+}
+
+.tok-keyword {
+    color: #c678dd;
+}

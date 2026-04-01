@@ -15,6 +15,7 @@ const DOT_BOUNDARY_CHARS = new Set<number>([
 	91,  // [
 	93,  // ]
 	44,  // ,
+	58,  // :
 	60,  // <
 	62   // >
 ]);
@@ -33,7 +34,7 @@ function isLetter(c: number) {
 	return (c >= CHAR_A && c <= CHAR_Z) || (c >= CHAR_LOWER_A && c <= CHAR_LOWER_Z);
 }
 
-// Contextual tokenizer for dot-prefixed directive identifiers (.class, .namespace, …).
+// Contextual tokenizer for dot-prefixed directive identifiers (.class, .namespace, .ctor, …).
 // contextual: true means it only runs when the parser state explicitly expects
 // a dotIdentifier token, so it does NOT compete with the plain '.' separator
 // inside dottedName rules.

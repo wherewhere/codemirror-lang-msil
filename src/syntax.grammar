@@ -124,29 +124,21 @@
 
 	// General
 
-	P_DEFINE { '#define' }
-	P_UNDEF { '#undef' }
-	P_IFDEF { '#ifdef' }
-	P_IFNDEF { '#ifndef' }
-	P_ELSE { '#else' }
-	P_ENDIF { '#endif' }
-	P_INCLUDE { '#include' }
+	P_DEFINE[@name=PP_Directive] { '#define' }
+	P_UNDEF[@name=PP_Directive] { '#undef' }
+	P_IFDEF[@name=PP_Directive] { '#ifdef' }
+	P_IFNDEF[@name=PP_Directive] { '#ifndef' }
+	P_ELSE[@name=PP_Directive] { '#else' }
+	P_ENDIF[@name=PP_Directive] { '#endif' }
+	P_INCLUDE[@name=PP_Directive] { '#include' }
 
-	P_LINE { '#line' }
+	P_LINE[@name=PP_Directive] { '#line' }
 }
 
 // General
 
-TypeIdentifier {
-	identifier ~tid
-}
-
-FieldName {
-	identifier ~tid
-}
-
-dottedFieldName {
-	dottedNameOf<FieldName>
+bytesDelim {
+	parens<bytes>
 }
 
 // Compilation unit
@@ -161,15 +153,15 @@ memberDecl {
 	| methodDecl
 	| fieldDecl
 	| dataDecl
-//	| vtableDecl
-//	| vtfixupDecl
+	| vtableDecl
+	| vtfixupDecl
 	| extSourceSpec
 	| fileDecl
 	| assemblyDecl
 	| assemblyRefDecl
-//	| exptypeHead '{' exptypeDecls '}'
-//	| manifestResHead '{' manifestResDecls '}'
-//	| moduleHead
+	| exptypeDecl
+	| manifestResDecl
+	| moduleDecl
 	| secDecl
 	| customAttrDecl
 	| dkw<'.subsystem'> int32
@@ -178,9 +170,9 @@ memberDecl {
 	| dkw<'.imagebase'> int64
 	| dkw<'.stackreserve'> int64
 	| languageDecl
-//	| typedefDecl
+	| typedefDecl
 	| compControl
-	| dkw<'.typelist'> '{' classNameSeq '}'
+	| dkw<'.typelist'> braces<classNameSeq>
 	| dkw<'.mscorlib'>
 }
 
@@ -193,13 +185,13 @@ compQstring {
 	sep1<QSTRING, '+'>
 }
 
-languageDecl {
+languageDecl[@name=Language] {
 	dkw<'.language'> SQSTRING (',' SQSTRING (',' SQSTRING)?)?
 }
 
 /* Basic tokens */
-idt<type> {
-	type
+idBase {
+	identifier ~tid
 	/* Allow methodImpl attributes to be used as identifiers */
 	| kw<'native'>
 	| kw<'cil'>
@@ -220,16 +212,64 @@ idt<type> {
 	| SQSTRING
 }
 
-id {
-	idt<TypeIdentifier>
+id[@name=Identifier] {
+	idBase
 }
 
-dottedNameOf<type> {
-	sep1<idt<type>, '.'>
+paramNameId[@name=ParamName] {
+	idBase
 }
 
-dottedName {
-	dottedNameOf<TypeIdentifier>
+labelNameId[@name=LabelName] {
+	idBase ':'
+}
+
+dottedNameBase {
+	sep1<idBase, '.'>
+}
+
+dottedName[@name=TypeIdentifier] {
+	dottedNameBase
+}
+
+dottedAssemblyName[@name=AssemblyName] {
+	dottedNameBase
+}
+
+dottedModuleName[@name=ModuleName] {
+	dottedNameBase
+}
+
+dottedNamespaceName[@name=NamespaceName] {
+	dottedNameBase
+}
+
+dottedClassName[@name=ClassName] {
+	dottedNameBase
+}
+
+dottedArgumentName[@name=ArgumentName] {
+	dottedNameBase
+}
+
+dottedFieldName[@name=FieldName] {
+	dottedNameBase
+}
+
+dottedConstName[@name=ConstName] {
+	dottedNameBase
+}
+
+dottedMethodName[@name=MethodName] {
+	dottedNameBase
+}
+
+dottedPropertyName[@name=PropertyName] {
+	dottedNameBase
+}
+
+dottedEventName[@name=EventName] {
+	dottedNameBase
 }
 
 int32 {
@@ -242,8 +282,13 @@ int64 {
 
 float64 {
 	RealLiteral
-	| kw<'float32'> '(' int32 ')'
-	| kw<'float64'> '(' int64 ')'
+	| kw<'float32'> parens<int32>
+	| kw<'float64'> parens<int64>
+}
+
+/* Aliasing of types, type specs, methods, fields and custom attributes */
+typedefDecl[@name=TypeDef] {
+	dkw<'.typedef'> (type | className | memberRef | customDescr | customDescrWithOwner) kw<'as'> dottedName
 }
 
 /* Compilation control directives are processed within yylex(), displayed here just for grammar completeness */
@@ -261,11 +306,11 @@ compControl	{
 
 /* Custom attribute declarations */
 customDescr {
-	dkw<'.custom'> customType ('=' (compQstring | ('{' customBlobDescr '}') | bytes))?
+	dkw<'.custom'> customType ('=' (compQstring | braces<customBlobDescr> | bytesDelim))?
 }
 
 customDescrWithOwner {
-	dkw<'.custom'> '(' ownerType ')' customType ('=' (compQstring | ('{' customBlobDescr '}') | bytes))?
+	dkw<'.custom'> parens<ownerType> customType ('=' (compQstring | braces<customBlobDescr> | bytesDelim))?
 }
 
 customType {
@@ -295,7 +340,7 @@ fieldOrProp {
 	| kw<'property'>
 }
 
-customAttrDecl {
+customAttrDecl[@name=CustomAttribute] {
 	customDescr
 	| customDescrWithOwner
 }
@@ -309,17 +354,39 @@ serializType {
 	| serializType '[' ']'
 }
 
+/* Module declaration */
+moduleDecl[@name=Module] {
+	dkw<'.module'> kw<'extern'>? dottedModuleName?
+}
+
+/*  VTable Fixup table declaration  */
+vtfixupDecl[@name=VTableFixup] {
+	dkw<'.vtfixup'> brackets<int32> vtfixupAttr* kw<'at'> id
+}
+
+vtfixupAttr {
+	kw<'int32'>
+	| kw<'int64'>
+	| kw<'fromunmanaged'>
+	| kw<'callmostderived'>
+	| kw<'retainappdomain'>
+}
+
+vtableDecl[@name=VTable] {
+	dkw<'.vtable'> '=' bytesDelim /* deprecated */
+}
+
 /* Namespace and class declaration */
-namespaceDecl {
-	dkw<'.namespace'> dottedName namespaceBody
+namespaceDecl[@name=Namespace] {
+	dkw<'.namespace'> dottedNamespaceName namespaceBody
 }
 
 namespaceBody {
-	delim<'{' memberDecl* '}'>
+	braces<memberDecl*>
 }
 
-classDecl {
-	dkw<'.class'> classAttr* dottedName typarsClause?
+classDecl[@name=Class] {
+	dkw<'.class'> classAttr* dottedClassName typarsClause?
 	extendsClause? implClause?
 	classBody
 }
@@ -351,7 +418,7 @@ classAttr {
 	| kw<'beforefieldinit'>
 	| kw<'specialname'>
 	| kw<'rtspecialname'>
-	| kw<'flags'> '(' int32 ')'
+	| kw<'flags'> parens<int32>
 }
 
 extendsClause {
@@ -371,7 +438,7 @@ typeList {
 	csep1<typeSpec>
 }
 
-typarsClause { '<' typars '>' }
+typarsClause { chevrons<typars> }
 
 typarAttrib {
 	'+'
@@ -380,24 +447,24 @@ typarAttrib {
 	| kw<'valuetype'>
 	| kw<'byreflike'>
 	| dkw<'.ctor'>
-	| kw<'flags'> '(' int32 ')'
+	| kw<'flags'> parens<int32>
 }
 
-typars { csep1<(typarAttrib* (tyBound ('+'|'-')?)? dottedName)> }
+typars { csep1<(typarAttrib* (tyBound ('+'|'-')?)? dottedArgumentName)> }
 
-tyBound { '(' typeList ')' }
+tyBound { parens<typeList> }
 
 genArity {
 	genArityNotEmpty?
 }
 
 genArityNotEmpty {
-	'<' '[' int32 ']' '>'
+	chevrons<brackets<int32>>
 }
 
 /* Class body declarations */
 classBody {
-	delim<'{' classMemberDecl* '}'>
+	braces<classMemberDecl*>
 }
 
 classMemberDecl {
@@ -412,19 +479,21 @@ classMemberDecl {
 	| customAttrDecl
 	| dkw<'.size'> int32
 	| dkw<'.pack'> int32
-//	| exportHead '{' exptypeDecls '}'
-	| dkw<'.override'> typeSpec '::' methodName kw<'with'> callConv type typeSpec '::' methodName '(' sigArgs0 ')'
-	| dkw<'.override'> kw<'method'> callConv type typeSpec '::' methodName genArity '(' sigArgs0 ')' kw<'with'> kw<'method'> callConv type typeSpec '::' methodName genArity '(' sigArgs0 ')'
+	| exportDecl
+	| dkw<'.override'> typeSpec '::' methodName kw<'with'> callConv type typeSpec '::' methodName parens<sigArgs0>
+	| dkw<'.override'> kw<'method'> callConv type typeSpec '::' methodName genArity parens<sigArgs0 ')'> kw<'with'> kw<'method'> callConv type typeSpec '::' methodName genArity delim<'(' sigArgs0>
 	| languageDecl
 	| compControl
-	| dkw<'.param'> kw<'type'> (('[' int32 ']') | dottedName)
-	| dkw<'.param'> kw<'constraint'> (('[' int32 ']') | dottedName) ',' typeSpec
+	| dkw<'.param'> kw<'type'> (('[' int32 ']') | dottedArgumentName)
+	| dkw<'.param'> kw<'constraint'> (('[' int32 ']') | dottedArgumentName) ',' typeSpec
 	| dkw<'.interfaceimpl'> kw<'type'> typeSpec customDescr
 }
 
 /* Field declaration */
-fieldDecl {
-	dkw<'.field'> repeatOpt? fieldAttr* type dottedFieldName atOpt? initOpt?
+fieldDecl[@name=Field] {
+	dkw<'.field'> repeatOpt? fieldAttr* type dottedFieldName
+	| dkw<'.field'> repeatOpt? fieldAttr* type dottedConstName atOpt initOpt?
+	| dkw<'.field'> repeatOpt? fieldAttr* type dottedConstName initOpt
 }
 
 fieldAttr {
@@ -436,18 +505,18 @@ fieldAttr {
 	| kw<'rtspecialname'>
 	| kw<'specialname'>
 	/* <STRIP>commented out because PInvoke for fields is not supported by EE
-	| kw<'pinvokeimpl'> '(' compQstring 'as' compQstring pinvAttr ')'
-	| kw<'pinvokeimpl'> '(' compQstring  pinvAttr ')'
-	| kw<'pinvokeimpl'> '(' pinvAttr ')'
+	| kw<'pinvokeimpl'> parens<compQstring 'as' compQstring pinvAttr>
+	| kw<'pinvokeimpl'> parens<compQstring  pinvAttr>
+	| kw<'pinvokeimpl'> parens<pinvAttr>
 	</STRIP> */
-	| kw<'marshal'> '(' marshalBlob ')'
+	| kw<'marshal'> parens<marshalBlob>
 	| kw<'assembly'>
 	| kw<'famandassem'>
 	| kw<'famorassem'>
 	| kw<'privatescope'>
 	| kw<'literal'>
 	| kw<'notserialized'>
-	| kw<'flags'> '(' int32 ')'
+	| kw<'flags'> parens<int32>
 }
 
 atOpt {
@@ -459,13 +528,13 @@ initOpt {
 }
 
 repeatOpt {
-	'[' int32 ']'
+	brackets<int32>
 }
 
 /* Method referencing */
-methodRef {
-	callConv type typeSpec '::' methodName (tyArgs0 | genArityNotEmpty) '(' sigArgs0 ')'
-	| callConv type methodName (tyArgs0 | genArityNotEmpty) '(' sigArgs0 ')'
+methodRef[@name=MethodRef] {
+	callConv type typeSpec '::' methodName (tyArgs0 | genArityNotEmpty) parens<sigArgs0>
+	| callConv type methodName (tyArgs0 | genArityNotEmpty) parens<sigArgs0>
 	| mdtoken
 }
 
@@ -473,7 +542,7 @@ callConv {
 	kw<'instance'> callConv
 	| kw<'explicit'> callConv
 	| callKind?
-	| kw<'callconv'> '(' int32 ')'
+	| kw<'callconv'> parens<int32>
 }
 
 callKind {
@@ -482,18 +551,18 @@ callKind {
 }
 
 mdtoken {
-	kw<'mdtoken'> '(' int32 ')'
+	kw<'mdtoken'> parens<int32>
 }
 
-memberRef {
+memberRef[@name=MemberRef] {
 	methodSpec methodRef
-	| kw<'field'> type dottedName
-	| kw<'field'> type typeSpec '::' dottedName
+	| kw<'field'> type dottedFieldName
+	| kw<'field'> type typeSpec '::' dottedFieldName
 }
 
 /* Event declaration */
-eventDecl {
-	dkw<'.event'> eventAttr* typeSpec? dottedName eventBody
+eventDecl[@name=Event] {
+	dkw<'.event'> eventAttr* typeSpec? dottedEventName eventBody
 }
 
 eventAttr {
@@ -502,7 +571,7 @@ eventAttr {
 }
 
 eventBody {
-	delim<'{' eventBodyDecl* '}'>
+	braces<eventBodyDecl*>
 }
 
 eventBodyDecl {
@@ -517,8 +586,8 @@ eventBodyDecl {
 }
 
 /* Property declaration */
-propDecl {
-	dkw<'.property'> propAttr* callConv type dottedName '(' sigArgs0 ')' initOpt? propBody
+propDecl[@name=Property] {
+	dkw<'.property'> propAttr* callConv type dottedPropertyName parens<sigArgs0> initOpt? propBody
 }
 
 propAttr {
@@ -527,7 +596,7 @@ propAttr {
 }
 
 propBody {
-	delim<'{' propBodyDecl* '}'>
+	braces<propBodyDecl*>
 }
 
 propBodyDecl {
@@ -541,12 +610,12 @@ propBodyDecl {
 }
 
 /* Method declaration */
-methodDecl {
-	dkw<'.method'> methAttr* callConv paramAttr* type marshalClause? methodName typarsClause '(' sigArgs0 ')' implAttr* methodBody
+methodDecl[@name=Method] {
+	dkw<'.method'> methAttr* callConv paramAttr* type marshalClause? methodName typarsClause? parens<sigArgs0> implAttr* methodBody
 }
 
 marshalClause {
-	kw<'marshal'> '(' marshalBlob ')'
+	kw<'marshal'> parens<marshalBlob>
 }
 
 methAttr {
@@ -568,8 +637,8 @@ methAttr {
 	| kw<'rtspecialname'>
 	| kw<'unmanagedexp'>
 	| kw<'reqsecobj'>
-	| kw<'flags'> '(' int32 ')'
-	| kw<'pinvokeimpl'> '(' (compQstring (kw<'as'> compQstring)?)? pinvAttr* ')'
+	| kw<'flags'> parens<int32>
+	| kw<'pinvokeimpl'> parens<(compQstring (kw<'as'> compQstring)?)? pinvAttr*>
 }
 
 pinvAttr {
@@ -584,25 +653,25 @@ pinvAttr {
 	| kw<'thiscall'>
 	| kw<'fastcall'>
 	| (kw<'bestfit'> | kw<'charmaperror'>) ':' (kw<'on'> | kw<'off'>)
-	| kw<'flags'> '(' int32 ')'
+	| kw<'flags'> parens<int32>
 }
 
 marshalBlob {
 	nativeType?
-	| '{' ByteLiteral+ '}'
+	| braces<ByteLiteral+>
 }
 
 methodName {
 	dkw<'.ctor'>
 	| dkw<'.cctor'>
-	| dottedName
+	| dottedMethodName
 }
 
 paramAttr {
-	'[' kw<'in'> ']'
-	| '[' kw<'out'> ']'
-	| '[' kw<'opt'> ']'
-	| '[' int32 ']'
+	brackets<kw<'in'>>
+	| brackets<kw<'out'>>
+	| brackets<kw<'opt'>>
+	| brackets<int32>
 }
 
 implAttr {
@@ -621,40 +690,38 @@ implAttr {
 	| kw<'nooptimization'>
 	| kw<'aggressiveoptimization'>
 	| kw<'async'>
-	| kw<'flags'> '(' int32 ')'
+	| kw<'flags'> parens<int32>
 }
 
 methodBody {
-	delim<'{' methodBodyDecl* '}'>
+	braces<methodBodyDecl*>
 }
 
 methodBodyDecl {
 	dkw<'.emitbyte'> int32
 	| sehBlock
 	| dkw<'.maxstack'> int32
-	| dkw<'.locals'> kw<'init'>? '(' sigArgs0 ')'
+	| dkw<'.locals'> kw<'init'>? parens<sigArgs0>
 	| dkw<'.entrypoint'>
 	| dkw<'.zeroinit'>
 	| dataDecl
 	| instr
-	| id ':'
+	| labelNameId
 	| secDecl
 	| extSourceSpec
 	| languageDecl
 	| customAttrDecl
 	| compControl
-	| dkw<'.export'> '[' int32 ']' (kw<'as'> id)?
+	| dkw<'.export'> brackets<int32> (kw<'as'> id)?
 	| dkw<'.vtentry'> int32 ':' int32
 	| dkw<'.override'> typeSpec '::' methodName
 
-	| dkw<'.override'> kw<'method'> callConv type typeSpec '::' methodName genArity '(' sigArgs0 ')'
+	| dkw<'.override'> kw<'method'> callConv type typeSpec '::' methodName genArity parens<sigArgs0>
 	| scopeBlock
-	| dkw<'.param'> kw<'type'> '[' int32 ']'
-	| dkw<'.param'> kw<'type'> dottedName
-	| dkw<'.param'> kw<'constraint'> '[' int32 ']' ',' typeSpec
-	| dkw<'.param'> kw<'constraint'> dottedName ',' typeSpec
+	| dkw<'.param'> kw<'type'> ('[' int32 ']' | dottedArgumentName)
+	| dkw<'.param'> kw<'constraint'> ('[' int32 ']' | dottedArgumentName) ',' typeSpec
 
-	| dkw<'.param'> '[' int32 ']' initOpt
+	| dkw<'.param'> brackets<int32> initOpt
 }
 
 scopeBlock {
@@ -690,7 +757,7 @@ handlerBlock {
 }
 
 /* Data declaration */
-dataDecl {
+dataDecl[@name=Data] {
 	dkw<'.data'> tls? (id '=')? ddBody
 }
 
@@ -700,7 +767,7 @@ tls {
 }
 
 ddBody {
-	'{' ddItemList '}'
+	braces<ddItemList>
 	| ddItem
 }
 
@@ -709,19 +776,19 @@ ddItemList {
 }
 
 ddItemCount {
-	'[' int32 ']'
+	brackets<int32>
 }
 
 ddItem {
-	kw<'char'> '*' '(' compQstring ')'
-	| '&' '(' id ')'
-	| kw<'bytearray'> '(' bytes ')'
-	| kw<'float32'> '(' float64 ')' ddItemCount?
-	| kw<'float64'> '(' float64 ')' ddItemCount?
-	| kw<'int64'> '(' int64 ')' ddItemCount?
-	| kw<'int32'> '(' int32 ')' ddItemCount?
-	| kw<'int16'> '(' int32 ')' ddItemCount?
-	| kw<'int8'> '(' int32 ')' ddItemCount?
+	kw<'char'> '*' parens<compQstring>
+	| '&' parens<id>
+	| kw<'bytearray'> bytesDelim
+	| kw<'float32'> parens<float64> ddItemCount?
+	| kw<'float64'> parens<float64> ddItemCount?
+	| kw<'int64'> parens<int64> ddItemCount?
+	| kw<'int32'> parens<int32> ddItemCount?
+	| kw<'int16'> parens<int32> ddItemCount?
+	| kw<'int8'> parens<int32> ddItemCount?
 	| kw<'float32'> ddItemCount?
 	| kw<'float64'> ddItemCount?
 	| kw<'int64'> ddItemCount?
@@ -732,25 +799,25 @@ ddItem {
 
 /* Default values declaration for fields, parameters and verbal form of CA blob description */
 fieldSerInit {
-	kw<'float32'> '(' float64 ')'
-	| kw<'float64'> '(' float64 ')'
-	| kw<'float32'> '(' int32 ')'
-	| kw<'float64'> '(' int64 ')'
-	| kw<'int64'> '(' int64 ')'
-	| kw<'int32'> '(' int32 ')'
-	| kw<'int16'> '(' int32 ')'
-	| kw<'int8'> '(' int32 ')'
-	| kw<'unsigned'> kw<'int64'> '(' int64 ')'
-	| kw<'unsigned'> kw<'int32'> '(' int32 ')'
-	| kw<'unsigned'> kw<'int16'> '(' int32 ')'
-	| kw<'unsigned'> kw<'int8'> '(' int32 ')'
-	| kw<'uint64'> '(' int64 ')'
-	| kw<'uint32'> '(' int32 ')'
-	| kw<'uint16'> '(' int32 ')'
-	| kw<'uint8'> '(' int32 ')'
-	| kw<'char'> '(' int32 ')'
-	| kw<'bool'> '(' truefalse ')'
-	| kw<'bytearray'> '(' bytes ')'
+	kw<'float32'> parens<float64>
+	| kw<'float64'> parens<float64>
+	| kw<'float32'> parens<int32>
+	| kw<'float64'> parens<int64>
+	| kw<'int64'> parens<int64>
+	| kw<'int32'> parens<int32>
+	| kw<'int16'> parens<int32>
+	| kw<'int8'> parens<int32>
+	| kw<'unsigned'> kw<'int64'> parens<int64>
+	| kw<'unsigned'> kw<'int32'> parens<int32>
+	| kw<'unsigned'> kw<'int16'> parens<int32>
+	| kw<'unsigned'> kw<'int8'> parens<int32>
+	| kw<'uint64'> parens<int64>
+	| kw<'uint32'> parens<int32>
+	| kw<'uint16'> parens<int32>
+	| kw<'uint8'> parens<int32>
+	| kw<'char'> parens<int32>
+	| kw<'bool'> parens<truefalse>
+	| kw<'bytearray'> bytesDelim
 }
 
 bytes {
@@ -761,37 +828,37 @@ bytes {
 fieldInit {
 	fieldSerInit
 	| compQstring
-	| kw<'nullref'>
+	| null<'nullref'>
 }
 
 /* Values for verbal form of CA blob description */
 serInit {
 	fieldSerInit
-	| kw<'string'> '(' kw<'nullref'> ')'
-	| kw<'string'> '(' SQSTRING ')'
-	| kw<'type'> '(' kw<'class'> SQSTRING ')'
-	| kw<'type'> '(' className ')'
-	| kw<'type'> '(' kw<'nullref'> ')'
-	| kw<'object'> '(' serInit ')'
-	| kw<'float32'> '[' int32 ']' '(' f32seq ')'
-	| kw<'float64'> '[' int32 ']' '(' f64seq ')'
-	| kw<'int64'> '[' int32 ']' '(' i64seq ')'
-	| kw<'int32'> '[' int32 ']' '(' i32seq ')'
-	| kw<'int16'> '[' int32 ']' '(' i16seq ')'
-	| kw<'int8'> '[' int32 ']' '(' i8seq ')'
-	| kw<'uint64'> '[' int32 ']' '(' i64seq ')'
-	| kw<'uint32'> '[' int32 ']' '(' i32seq ')'
-	| kw<'uint16'> '[' int32 ']' '(' i16seq ')'
-	| kw<'uint8'> '[' int32 ']' '(' i8seq ')'
-	| kw<'unsigned'> kw<'int64'> '[' int32 ']' '(' i64seq ')'
-	| kw<'unsigned'> kw<'int32'> '[' int32 ']' '(' i32seq ')'
-	| kw<'unsigned'> kw<'int16'> '[' int32 ']' '(' i16seq ')'
-	| kw<'unsigned'> kw<'int8'> '[' int32 ']' '(' i8seq ')'
-	| kw<'char'> '[' int32 ']' '(' i16seq ')'
-	| kw<'bool'> '[' int32 ']' '(' boolSeq ')'
-	| kw<'string'> '[' int32 ']' '(' sqstringSeq ')'
-	| kw<'type'> '[' int32 ']' '(' classSeq ')'
-	| kw<'object'> '[' int32 ']' '(' objSeq ')'
+	| kw<'string'> parens<null<'nullref'>>
+	| kw<'string'> parens<SQSTRING>
+	| kw<'type'> parens<kw<'class'> SQSTRING>
+	| kw<'type'> parens<className>
+	| kw<'type'> parens<null<'nullref'>>
+	| kw<'object'> parens<serInit>
+	| kw<'float32'> brackets<int32> parens<f32seq>
+	| kw<'float64'> brackets<int32> parens<f64seq>
+	| kw<'int64'> brackets<int32> parens<i64seq>
+	| kw<'int32'> brackets<int32> parens<i32seq>
+	| kw<'int16'> brackets<int32> parens<i16seq>
+	| kw<'int8'> brackets<int32> parens<i8seq>
+	| kw<'uint64'> brackets<int32> parens<i64seq>
+	| kw<'uint32'> brackets<int32> parens<i32seq>
+	| kw<'uint16'> brackets<int32> parens<i16seq>
+	| kw<'uint8'> brackets<int32> parens<i8seq>
+	| kw<'unsigned'> kw<'int64'> brackets<int32> parens<i64seq>
+	| kw<'unsigned'> kw<'int32'> brackets<int32> parens<i32seq>
+	| kw<'unsigned'> kw<'int16'> brackets<int32> parens<i16seq>
+	| kw<'unsigned'> kw<'int8'> brackets<int32> parens<i8seq>
+	| kw<'char'> brackets<int32> parens<i16seq>
+	| kw<'bool'> brackets<int32> parens<boolSeq>
+	| kw<'string'> brackets<int32> parens<sqstringSeq>
+	| kw<'type'> brackets<int32> parens<classSeq>
+	| kw<'object'> brackets<int32> parens<objSeq>
 }
 
 f32seq {
@@ -823,11 +890,11 @@ boolSeq {
 }
 
 sqstringSeq {
-	(kw<'nullref'> | SQSTRING)*
+	(null<'nullref'> | SQSTRING)*
 }
 
 classSeq {
-	(kw<'nullref'>
+	(null<'nullref'>
 	| kw<'class'> SQSTRING
 	| className)*
 }
@@ -839,7 +906,7 @@ objSeq {
 /* IL instructions and associated definitions */
 methodSpec { kw<'method'> }
 
-instr_none {
+instr_none[@name=OpCode] {
 	kw<'nop'>
 	| kw<'break'>
 	| kw<'ldarg'> '.' '0'
@@ -991,7 +1058,7 @@ instr_none {
 	| kw<'endmac'>
 }
 
-instr_var {
+instr_var[@name=OpCode] {
 	kw<'ldarg'> '.' kw<'s'>
 	| kw<'ldarga'> '.' kw<'s'>
 	| kw<'starg'> '.' kw<'s'>
@@ -1006,23 +1073,23 @@ instr_var {
 	| kw<'stloc'>
 }
 
-instr_i {
+instr_i[@name=OpCode] {
 	kw<'ldc'> '.' kw<'i4'> '.' kw<'s'>
 	| kw<'ldc'> '.' kw<'i4'>
 	| kw<'unaligned'> '.'
 	| kw<'no'> '.'
 }
 
-instr_i8 {
+instr_i8[@name=OpCode] {
 	kw<'ldc'> '.' kw<'i8'>
 }
 
-instr_r {
+instr_r[@name=OpCode] {
 	kw<'ldc'> '.' kw<'r4'>
 	| kw<'ldc'> '.' kw<'r8'>
 }
 
-instr_brtarget {
+instr_brtarget[@name=OpCode] {
 	kw<'br'> '.' kw<'s'>
 	| kw<'brfalse'> '.' kw<'s'>
 	| kw<'brtrue'> '.' kw<'s'>
@@ -1053,7 +1120,7 @@ instr_brtarget {
 	| kw<'leave'> '.' kw<'s'>
 }
 
-instr_method {
+instr_method[@name=OpCode] {
 	kw<'jmp'>
 	| kw<'call'>
 	| kw<'callvirt'>
@@ -1062,7 +1129,7 @@ instr_method {
 	| kw<'ldvirtftn'>
 }
 
-instr_field {
+instr_field[@name=OpCode] {
 	kw<'ldfld'>
 	| kw<'ldflda'>
 	| kw<'stfld'>
@@ -1071,7 +1138,7 @@ instr_field {
 	| kw<'stsfld'>
 }
 
-instr_type {
+instr_type[@name=OpCode] {
 	kw<'cpobj'>
 	| kw<'ldobj'>
 	| kw<'castclass'>
@@ -1091,23 +1158,23 @@ instr_type {
 	| kw<'sizeof'>
 }
 
-instr_string {
+instr_string[@name=OpCode] {
 	kw<'ldstr'>
 }
 
-instr_sig {
+instr_sig[@name=OpCode] {
 	kw<'calli'>
 }
 
-instr_tok {
+instr_tok[@name=OpCode] {
 	kw<'ldtoken'>
 }
 
-instr_switch {
+instr_switch[@name=OpCode] {
 	kw<'switch'>
 }
 
-instr {
+instr[@name=Instr] {
 	instr_none
 	| instr_var int32
 	| instr_var id
@@ -1115,20 +1182,20 @@ instr {
 	| instr_i8 int64
 	| instr_r float64
 	| instr_r int64
-	| instr_r '(' bytes ')'
+	| instr_r bytesDelim
 	| instr_brtarget int32
 	| instr_brtarget id
 	| instr_method methodRef
-	| instr_field type typeSpec '::' dottedName
-	| instr_field type dottedName
+	| instr_field type typeSpec '::' dottedFieldName
+	| instr_field type dottedFieldName
 	| instr_field mdtoken
 	| instr_type typeSpec
 	| instr_string compQstring
-	| instr_string kw<'ansi'> '(' compQstring ')'
-	| instr_string kw<'bytearray'> '(' bytes ')'
-	| instr_sig callConv type '(' sigArgs0 ')'
+	| instr_string kw<'ansi'> parens<compQstring>
+	| instr_string kw<'bytearray'> bytesDelim
+	| instr_sig callConv type parens<sigArgs0>
 	| instr_tok ownerType /* ownerType ::= memberRef | typeSpec */
-	| instr_switch '(' labels ')'
+	| instr_switch parens<labels>
 }
 
 labels {
@@ -1146,15 +1213,15 @@ sigArgs0 { csep0<sigArg> }
 
 sigArg {
 	'...'
-	| paramAttr* type marshalClause? id?
+	| paramAttr* type marshalClause? paramNameId?
 }
 
 /* Class referencing */
-className {
-	'[' dottedName ']' !classNameAssemblyPrefix slashedName
-	| '[' mdtoken ']' slashedName
-	| '[' '*' ']' slashedName
-	| '[' dkw<'.module'> dottedName ']' !classNameAssemblyPrefix slashedName
+className[@name=ClassName] {
+	brackets<dottedAssemblyName> !classNameAssemblyPrefix slashedName
+	| brackets<mdtoken> slashedName
+	| brackets<'*'> slashedName
+	| brackets<dkw<'.module'> dottedModuleName> !classNameAssemblyPrefix slashedName
 	| slashedName
 	| mdtoken
 	| dkw<'.this'>
@@ -1168,16 +1235,16 @@ slashedName {
 
 typeSpec {
 	className
-	| '[' dottedName ']' !typeSpecAssemblyOnly
-	| '[' dkw<'.module'> dottedName ']' !typeSpecAssemblyOnly
+	| brackets<dottedAssemblyName> !typeSpecAssemblyOnly
+	| brackets<dkw<'.module'> dottedModuleName> !typeSpecAssemblyOnly
 	| type
 }
 
 /*  Native types for marshaling signatures  */
 nativeType {
-	kw<'custom'> '(' compQstring ',' compQstring (',' compQstring ',' compQstring)? ')'
-	| kw<'fixed'> kw<'sysstring'> '[' int32 ']'
-	| kw<'fixed'> kw<'array'> '[' int32 ']'
+	kw<'custom'> parens<compQstring ',' compQstring (',' compQstring ',' compQstring)?>
+	| kw<'fixed'> kw<'sysstring'> delim<'[' int32 ']'>
+	| kw<'fixed'> kw<'array'> delim<'[' int32 ']'>
 	| kw<'variant'>
 	| kw<'currency'>
 	| kw<'syschar'>
@@ -1196,7 +1263,7 @@ nativeType {
 	| kw<'uint32'>
 	| kw<'uint64'>
 	| nativeType '*'
-	| nativeType '[' int32? ('+' int32)? ']'
+	| nativeType brackets<int32? ('+' int32)?>
 	| kw<'decimal'>
 	| kw<'date'>
 	| kw<'bstr'>
@@ -1221,11 +1288,11 @@ nativeType {
 }
 
 iidParamIndex {
-	'(' 'iidparam' '=' int32 ')'
+	parens<'iidparam' '=' int32>
 }
 
 variantType {
-	kw<'null'>
+	null<'null'>
 	| kw<'variant'>
 	| kw<'currency'>
 	| kw<'void'>
@@ -1272,14 +1339,14 @@ variantType {
 }
 
 /* Managed types for signatures */
-type {
+type[@name=Type] {
 	(kw<'class'> | kw<'valuetype'>) className
 	| (kw<'object'> | '&' | '*' | kw<'pinned'> | kw<'typedref'> | kw<'void'>)
 	| kw<'value'> kw<'class'> className
-	| type !typeArgs '[' bounds1? ']'
-	| type !typeArgs (kw<'modreq'> | kw<'modopt'>) '(' typeSpec ')'
-	| methodSpec callConv type '*' '(' sigArgs0 ')'
-	| type !typeArgs '<' tyArgs1 '>'
+	| type !typeArgs brackets<bounds1?>
+	| type !typeArgs (kw<'modreq'> | kw<'modopt'>) parens<typeSpec>
+	| methodSpec callConv type '*' parens<sigArgs0>
+	| type !typeArgs chevrons<tyArgs1>
 	| '!' '!'? (int32 | dottedName)
 	| kw<'native'> kw<'unsigned'>? kw<'int'>
 	| kw<'native'> kw<'uint'>
@@ -1313,13 +1380,13 @@ bound {
 }
 
 /* Security declarations */
-secDecl {
-	dkw<'.permission'> secAction typeSpec '(' nameValPairs ')'
-	| dkw<'.permission'> secAction typeSpec '=' '{' customBlobDescr '}'
+secDecl[@name=Security] {
+	dkw<'.permission'> secAction typeSpec parens<nameValPairs>
+	| dkw<'.permission'> secAction typeSpec '=' braces<customBlobDescr>
 	| dkw<'.permission'> secAction typeSpec
-	| psetHead '(' bytes ')'
+	| psetHead bytesDelim
 	| dkw<'.permissionset'> secAction compQstring
-	| dkw<'.permissionset'> secAction '=' '{' secAttrSetBlob '}'
+	| dkw<'.permissionset'> secAction '=' braces<secAttrSetBlob>
 }
 
 secAttrSetBlob {
@@ -1327,7 +1394,7 @@ secAttrSetBlob {
 }
 
 secAttrBlob {
-	typeSpec '=' '{' customBlobNVPairs '}'
+	typeSpec '=' braces<customBlobNVPairs>
 }
 
 psetHead {
@@ -1350,12 +1417,12 @@ truefalse {
 caValue {
 	truefalse
 	| int32
-	| kw<'int32'> '(' int32 ')'
+	| kw<'int32'> parens<int32>
 	| compQstring
-	| className '(' kw<'int8'> ':' int32 ')'
-	| className '(' kw<'int16'> ':' int32 ')'
-	| className '(' kw<'int32'> ':' int32 ')'
-	| className '(' int32 ')'
+	| className parens<kw<'int8'> ':' int32>
+	| className parens<kw<'int16'> ':' int32>
+	| className parens<kw<'int32'> ':' int32>
+	| className parens<int32>
 }
 
 secAction {
@@ -1391,8 +1458,8 @@ extSourceSpec {
 }
 
 /* Manifest declarations */
-fileDecl {
-	dkw<'.file'> fileAttr* dottedName fileEntry? (dkw<'.hash'> '=' '(' bytes ')' fileEntry)?
+fileDecl[@name=File] {
+	dkw<'.file'> fileAttr* dottedName fileEntry? (dkw<'.hash'> '=' bytesDelim fileEntry)?
 }
 
 fileAttr {
@@ -1403,8 +1470,8 @@ fileEntry {
 	dkw<'.entrypoint'>
 }
 
-assemblyDecl {
-	dkw<'.assembly'> asmAttr* dottedName assemblyBody?
+assemblyDecl[@name=Assembly] {
+	dkw<'.assembly'> asmAttr* dottedAssemblyName assemblyBody?
 }
 
 asmAttr {
@@ -1420,7 +1487,7 @@ asmAttr {
 }
 
 assemblyBody {
-	delim<'{' assemblyBodyDecl* '}'>
+	braces<assemblyBodyDecl*>
 }
 
 assemblyBodyDecl {
@@ -1434,35 +1501,94 @@ intOrWildcard {
 	| '*'
 }
 
-asmOrRefDecl {
-	dkw<'.publickey'> '=' '(' bytes ')'
+asmOrRefDecl[@name=AsmOrRef] {
+	dkw<'.publickey'> '=' bytesDelim
 	| dkw<'.ver'> intOrWildcard ':' intOrWildcard ':' intOrWildcard ':' intOrWildcard
 	| dkw<'.locale'> compQstring
-	| '.locale' '=' '(' bytes ')'
+	| '.locale' '=' bytesDelim
 	| customAttrDecl
 	| compControl
 }
 
-assemblyRefDecl {
-	dkw<'.assembly'> kw<'extern'> asmAttr* dottedName (kw<'as'> dottedName)? assemblyRefBody?
+assemblyRefDecl[@name=AssemblyRef] {
+	dkw<'.assembly'> kw<'extern'> asmAttr* dottedAssemblyName (kw<'as'> dottedName)? assemblyRefBody?
 }
 
 assemblyRefBody {
-	delim<'{' assemblyRefBodyDecl* '}'>
+	braces<assemblyRefBodyDecl*>
 }
 
 assemblyRefBodyDecl {
-	dkw<'.hash'> '=' '(' bytes ')'
+	dkw<'.hash'> '=' bytesDelim
 	| asmOrRefDecl
-	| dkw<'.publickeytoken'> '=' '(' bytes ')'
+	| dkw<'.publickeytoken'> '=' bytesDelim
 	| kw<'auto'>
+}
+
+exptypeDecl[@name=ExportType] {
+	dkw<'.class'> dkw<'extern'> exptAttr* dottedName exptypeBody
+}
+
+exportDecl[@name=Export] {
+	dkw<'.export'> exptAttr* dottedName exptypeBody /* deprecated */
+}
+
+exptAttr {
+	kw<'private'>
+	| kw<'public'>
+	| kw<'forwarder'>
+	| kw<'nested'> kw<'public'>
+	| kw<'nested'> kw<'private'>
+	| kw<'nested'> kw<'family'>
+	| kw<'nested'> kw<'assembly'>
+	| kw<'nested'> kw<'famandassem'>
+	| kw<'nested'> kw<'famorassem'>
+}
+
+exptypeBody {
+	braces<exptypeBodyDecl*>
+}
+
+exptypeBodyDecl {
+	dkw<'.file'> dottedName
+	| dkw<'.class'> kw<'extern'> slashedName
+	| dkw<'.assembly'> kw<'extern'> dottedAssemblyName
+	| dkw<'mdtoken'> parens<int32>
+	| dkw<'.class'>  int32
+	| customAttrDecl
+	| compControl
+}
+
+manifestResDecl[@name=ManifestResource] {
+	dkw<'.mresource'> manresAttr* dottedName (kw<'as'> dottedName)? manifestResBody
+}
+
+manresAttr {
+	kw<'public'>
+	| kw<'private'>
+}
+
+manifestResBody {
+	braces<manifestResBodyDecl*>
+}
+
+manifestResBodyDecl {
+	dkw<'.file'> dottedName kw<'at'> int32
+	| dkw<'.assembly'> kw<'extern'> dottedAssemblyName
+	| customAttrDecl
+	| compControl
 }
 
 // Util
 
 kw<word> { @specialize[@name=Keyword]<identifier, word> }
 dkw<word> { @specialize[@name=Keyword]<dotIdentifier, word> }
+null<word> { @specialize[@name=NullLiteral]<identifier, word> }
 delim<contents> { delim[@name=Delim] { contents } }
+braces<contents> { delim<'{' contents '}'> }
+brackets<contents> { delim<'[' contents ']'> }
+parens<contents> { delim<'(' contents ')'> }
+chevrons<contents> { delim<'<' contents '>'> }
 sep1<rule, by> { rule (by rule)* }
 csep1<rule> { sep1<rule, !comma ','> }
 csep0<rule> { csep1<rule>? }

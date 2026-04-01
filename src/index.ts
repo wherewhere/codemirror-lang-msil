@@ -15,48 +15,54 @@ export const msilLanguage = LRLanguage.define({
   parser: parser.configure({
     props: [
       indentNodeProp.add({
-        Delim: continuedIndent({ except: /^\s*(?:case\b|default:)/ })
+        Delim: continuedIndent()
       }),
       foldNodeProp.add({
         Delim: foldInside
       }),
       styleTags({
-        "Keyword ContextualKeyword SimpleType": t.keyword,
+        "Keyword SimpleType OpCode": t.keyword,
         BooleanLiteral: t.bool,
         NullLiteral: t.null,
         "IntegerLiteral ByteLiteral": t.integer,
         RealLiteral: t.float,
         'QSTRING SQSTRING': t.string,
-        "LineComment BlockComment": t.comment,
+        LineComment: t.lineComment,
+        BlockComment: t.blockComment,
 
-        ". .. : Astrisk Slash % + - ++ -- Not ~ << & | ^ && || < > <= >= == NotEq = += -= *= SlashEq %= &= |= ^= ? ?? ??= =>":
-          t.operator,
+        ". : Astrisk Slash + - Not & | =": t.operator,
 
-        "P_DEFINE P_UNDEF P_IFDEF P_IFNDEF P_ELSE P_ENDIF P_INCLUDE P_LINE": t.definitionKeyword,
+        PP_Directive: t.definitionKeyword,
 
-        TypeIdentifier: t.typeName,
-        "ArgumentName AttrsNamedArg": t.variableName,
+        "Identifier TypeIdentifier": t.typeName,
+        AssemblyName: [t.strong, t.name],
+        ModuleName: t.name,
+        NamespaceName: t.namespace,
+        ClassName: t.className,
+        "ArgumentName FieldName": t.variableName,
         ConstName: t.constant(t.variableName),
 
-        //Ident: t.name,
         MethodName: t.function(t.variableName),
         ParamName: [t.emphasis, t.variableName],
-        FieldName: t.variableName,
-        PropertyName: t.propertyName,
+        "PropertyName EventName": t.propertyName,
+        LabelName: t.labelName,
 
         "( )": t.paren,
         "{ }": t.brace,
-        "[ ]": t.squareBracket
+        "[ ]": t.squareBracket,
+        "< >": t.angleBracket,
       })
     ]
   }),
   languageData: {
     commentTokens: { line: "//", block: { open: "/*", close: "*/" } },
-    closeBrackets: { brackets: ["(", "[", "{", '"', "'"] },
-    indentOnInput: /^\s*((\)|\]|\})$|(else|else\s+if|catch|finally|case)\b|default:)/
+    closeBrackets: { brackets: ['(', '[', '{', '"', '\'', '<'] },
+    indentOnInput: /^\s*((\)|\]|\})$|(catch|finally)\b)/
   }
 });
 
 export function msil() {
   return new LanguageSupport(msilLanguage);
 }
+
+export { msilTooltip } from "./tooltip";
