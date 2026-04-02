@@ -1,8 +1,26 @@
-import { hoverTooltip } from "@codemirror/view";
+import { hoverTooltip, type TooltipView } from "@codemirror/view";
 import { syntaxTree } from "@codemirror/language";
 import instructions from "./instructions";
 
-export function msilTooltip(options?: Parameters<typeof hoverTooltip>[1]) {
+type tokenType = "keyword";
+type titleInfo = { title: string, type: tokenType };
+type hoverRender = (info: titleInfo, description: string) => TooltipView;
+
+export function hoverRender({ title, type }: titleInfo, description: string) {
+    const dom = document.createElement("div")
+    dom.classList.add("cm-msil-hover-infotip");
+    const name = document.createElement("span");
+    name.className = `tok-${type}`;
+    name.textContent = title;
+    const subname = document.createElement("div");
+    subname.className = "cm-msil-hover-infotip-description";
+    subname.textContent = description;
+    dom.appendChild(name);
+    dom.appendChild(subname);
+    return { dom };
+}
+
+export function msilTooltip(render: hoverRender = hoverRender, options?: Parameters<typeof hoverTooltip>[1]) {
     return hoverTooltip(function (view, pos) {
         let node = syntaxTree(view.state).resolveInner(pos);
         if (node.name !== "OpCode") {
@@ -21,17 +39,7 @@ export function msilTooltip(options?: Parameters<typeof hoverTooltip>[1]) {
                 return {
                     pos,
                     create() {
-                        const dom = document.createElement("div")
-                        dom.classList.add("cm-msil-hover-infotip");
-                        const name = document.createElement("span");
-                        name.className = "tok-keyword";
-                        name.textContent = text;
-                        const description = document.createElement("div");
-                        description.className = "cm-msil-hover-infotip-description";
-                        description.textContent = desc;
-                        dom.appendChild(name);
-                        dom.appendChild(description);
-                        return { dom };
+                        return render({ title: text, type: "keyword" }, desc);
                     }
                 };
             }

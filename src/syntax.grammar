@@ -571,10 +571,10 @@ eventAttr {
 }
 
 eventBody {
-	braces<eventBodyDecl*>
+	braces<eventMemberDecl*>
 }
 
-eventBodyDecl {
+eventMemberDecl {
 	dkw<'.addon'> methodRef
 	| dkw<'.removeon'> methodRef
 	| dkw<'.fire'> methodRef
@@ -596,10 +596,10 @@ propAttr {
 }
 
 propBody {
-	braces<propBodyDecl*>
+	braces<propMemberDecl*>
 }
 
-propBodyDecl {
+propMemberDecl {
 	dkw<'.set'> methodRef
 	| dkw<'.get'> methodRef
 	| dkw<'.other'> methodRef
@@ -694,10 +694,10 @@ implAttr {
 }
 
 methodBody {
-	braces<methodBodyDecl*>
+	braces<methodMemberDecl*>
 }
 
-methodBodyDecl {
+methodMemberDecl {
 	dkw<'.emitbyte'> int32
 	| sehBlock
 	| dkw<'.maxstack'> int32
@@ -1487,10 +1487,10 @@ asmAttr {
 }
 
 assemblyBody {
-	braces<assemblyBodyDecl*>
+	braces<assemblyMemberDecl*>
 }
 
-assemblyBodyDecl {
+assemblyMemberDecl {
 	dkw<'.hash'> kw<'algorithm'> int32
 	| secDecl
 	| asmOrRefDecl
@@ -1515,10 +1515,10 @@ assemblyRefDecl[@name=AssemblyRef] {
 }
 
 assemblyRefBody {
-	braces<assemblyRefBodyDecl*>
+	braces<assemblyRefMemberDecl*>
 }
 
-assemblyRefBodyDecl {
+assemblyRefMemberDecl {
 	dkw<'.hash'> '=' bytesDelim
 	| asmOrRefDecl
 	| dkw<'.publickeytoken'> '=' bytesDelim
@@ -1546,10 +1546,10 @@ exptAttr {
 }
 
 exptypeBody {
-	braces<exptypeBodyDecl*>
+	braces<exptypeMemberDecl*>
 }
 
-exptypeBodyDecl {
+exptypeMemberDecl {
 	dkw<'.file'> dottedName
 	| dkw<'.class'> kw<'extern'> slashedName
 	| dkw<'.assembly'> kw<'extern'> dottedAssemblyName
@@ -1569,10 +1569,10 @@ manresAttr {
 }
 
 manifestResBody {
-	braces<manifestResBodyDecl*>
+	braces<manifestResMemberDecl*>
 }
 
-manifestResBodyDecl {
+manifestResMemberDecl {
 	dkw<'.file'> dottedName kw<'at'> int32
 	| dkw<'.assembly'> kw<'extern'> dottedAssemblyName
 	| customAttrDecl

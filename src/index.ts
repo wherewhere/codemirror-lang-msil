@@ -1,4 +1,6 @@
-import { parser as msilParser } from "./syntax.grammar";
+import { parser } from "./syntax.grammar";
+export { parser };
+
 import {
   LRLanguage,
   LanguageSupport,
@@ -7,9 +9,8 @@ import {
   foldInside,
   continuedIndent,
 } from "@codemirror/language";
-import { styleTags, tags as t } from "@lezer/highlight";
-
-export const parser = msilParser;
+import { styleTags, tags } from "@lezer/highlight";
+import { autocomplete } from "./complete";
 
 export const msilLanguage = LRLanguage.define({
   parser: parser.configure({
@@ -21,43 +22,44 @@ export const msilLanguage = LRLanguage.define({
         Delim: foldInside
       }),
       styleTags({
-        "Keyword SimpleType OpCode": t.keyword,
-        BooleanLiteral: t.bool,
-        NullLiteral: t.null,
-        "IntegerLiteral ByteLiteral": t.integer,
-        RealLiteral: t.float,
-        'QSTRING SQSTRING': t.string,
-        LineComment: t.lineComment,
-        BlockComment: t.blockComment,
+        "Keyword SimpleType OpCode": tags.keyword,
+        BooleanLiteral: tags.bool,
+        NullLiteral: tags.null,
+        "IntegerLiteral ByteLiteral": tags.integer,
+        RealLiteral: tags.float,
+        'QSTRING SQSTRING': tags.string,
+        LineComment: tags.lineComment,
+        BlockComment: tags.blockComment,
 
-        ". : Astrisk Slash + - Not & | =": t.operator,
+        ". : Astrisk Slash + - Not & | =": tags.operator,
 
-        PP_Directive: t.definitionKeyword,
+        PP_Directive: tags.definitionKeyword,
 
-        "Identifier TypeIdentifier": t.typeName,
-        AssemblyName: [t.strong, t.name],
-        ModuleName: t.name,
-        NamespaceName: t.namespace,
-        ClassName: t.className,
-        "ArgumentName FieldName": t.variableName,
-        ConstName: t.constant(t.variableName),
+        "Identifier TypeIdentifier": tags.typeName,
+        AssemblyName: [tags.strong, tags.name],
+        ModuleName: tags.name,
+        NamespaceName: tags.namespace,
+        ClassName: tags.className,
+        "ArgumentName FieldName": tags.variableName,
+        ConstName: tags.constant(tags.variableName),
 
-        MethodName: t.function(t.variableName),
-        ParamName: [t.emphasis, t.variableName],
-        "PropertyName EventName": t.propertyName,
-        LabelName: t.labelName,
+        MethodName: tags.function(tags.variableName),
+        ParamName: [tags.emphasis, tags.variableName],
+        "PropertyName EventName": tags.propertyName,
+        LabelName: tags.labelName,
 
-        "( )": t.paren,
-        "{ }": t.brace,
-        "[ ]": t.squareBracket,
-        "< >": t.angleBracket,
+        "( )": tags.paren,
+        "{ }": tags.brace,
+        "[ ]": tags.squareBracket,
+        "< >": tags.angleBracket,
       })
     ]
   }),
   languageData: {
     commentTokens: { line: "//", block: { open: "/*", close: "*/" } },
     closeBrackets: { brackets: ['(', '[', '{', '"', '\'', '<'] },
-    indentOnInput: /^\s*((\)|\]|\})$|(catch|finally)\b)/
+    indentOnInput: /^\s*((\)|\]|\})$|(catch|finally)\b)/,
+    autocomplete: autocomplete
   }
 });
 
@@ -65,4 +67,4 @@ export function msil() {
   return new LanguageSupport(msilLanguage);
 }
 
-export { msilTooltip } from "./tooltip";
+export * from "./tooltip";

@@ -1,0 +1,123 @@
+export const memberDecl = [{
+    label: ".class",
+    type: "keyword"
+}, {
+    label: ".namespace",
+    type: "keyword"
+}, {
+    label: ".method",
+    type: "keyword"
+}, {
+    label: ".field",
+    type: "keyword"
+}, {
+    label: ".data",
+    type: "keyword"
+}, {
+    label: ".vtable",
+    type: "keyword"
+}, {
+    label: ".vtfixup",
+    type: "keyword"
+}, {
+    label: ".line",
+    type: "keyword"
+}, {
+    label: ".file",
+    type: "keyword"
+}, {
+    label: ".assembly",
+    type: "keyword"
+}, {
+    label: ".mresource",
+    type: "keyword"
+}, {
+    label: ".module",
+    type: "keyword"
+}, {
+    label: ".permission",
+    type: "keyword"
+}, {
+    label: ".permissionset",
+    type: "keyword"
+}, {
+    label: ".custom",
+    type: "keyword"
+}, {
+    label: ".subsystem",
+    type: "keyword"
+}, {
+    label: ".corflags",
+    type: "keyword"
+}, {
+    label: ".imagebase",
+    type: "keyword"
+}, {
+    label: ".stackreserve",
+    type: "keyword"
+}, {
+    label: ".language",
+    type: "keyword"
+}, {
+    label: ".typedef",
+    type: "keyword"
+}, {
+    label: ".typelist",
+    type: "keyword"
+}, {
+    label: ".mscorlib",
+    type: "keyword"
+}]
+
+export const classMemberDecl = [{
+    label: ".method",
+    type: "keyword"
+}, {
+    label: ".class",
+    type: "keyword"
+}, {
+    label: ".event",
+    type: "keyword"
+}, {
+    label: ".property",
+    type: "keyword"
+}, {
+    label: ".field",
+    type: "keyword"
+}, {
+    label: ".data",
+    type: "keyword"
+}, {
+    label: ".permission",
+    type: "keyword"
+}, {
+    label: ".permissionset",
+    type: "keyword"
+}, {
+    label: ".line",
+    type: "keyword"
+}, {
+    label: ".custom",
+    type: "keyword"
+}, {
+    label: ".size",
+    type: "keyword"
+}, {
+    label: ".pack",
+    type: "keyword"
+}, {
+    label: ".export",
+    type: "keyword"
+}, {
+    label: ".override",
+    type: "keyword"
+}, {
+    label: ".language",
+    type: "keyword"
+}, {
+    label: ".param",
+    type: "keyword"
+}, {
+    label: ".interfaceimpl",
+    type: "keyword"
+}]
