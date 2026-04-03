@@ -1,4 +1,4 @@
-@top START { compilationUnit }
+@top START[@name=CompilationUnit] { compilationUnit }
 
 @detectDelim
 
@@ -287,7 +287,7 @@ float64 {
 }
 
 /* Aliasing of types, type specs, methods, fields and custom attributes */
-typedefDecl[@name=TypeDef] {
+typedefDecl[@name=TypeDefine] {
 	dkw<'.typedef'> (type | className | memberRef | customDescr | customDescrWithOwner) kw<'as'> dottedName
 }
 
@@ -421,11 +421,11 @@ classAttr {
 	| kw<'flags'> parens<int32>
 }
 
-extendsClause {
+extendsClause[@name=ClassExtends] {
 	kw<'extends'> typeSpec
 }
 
-implClause {
+implClause[@name=ClassImplements] {
 	kw<'implements'> implList
 }
 
@@ -587,7 +587,7 @@ eventMemberDecl {
 
 /* Property declaration */
 propDecl[@name=Property] {
-	dkw<'.property'> propAttr* callConv type dottedPropertyName parens<sigArgs0> initOpt? propBody
+	dkw<'.property'> propAttr* callConv type dottedPropertyName parens<sigArgs0>? initOpt? propBody
 }
 
 propAttr {
@@ -724,8 +724,8 @@ methodMemberDecl {
 	| dkw<'.param'> brackets<int32> initOpt
 }
 
-scopeBlock {
-	methodBody
+scopeBlock[@name=MethodScopeBlock] {
+	braces<methodMemberDecl*>
 }
 
 /* Structured exception handling directives */
@@ -922,115 +922,115 @@ instr_none[@name=OpCode] {
 	| kw<'stloc'> '.' '2'
 	| kw<'stloc'> '.' '3'
 	| kw<'ldnull'>
-	| kw<'ldc'> '.' kw<'i4'> '.' kw<'m1'>
-	| kw<'ldc'> '.' kw<'i4'> '.' '0'
-	| kw<'ldc'> '.' kw<'i4'> '.' '1'
-	| kw<'ldc'> '.' kw<'i4'> '.' '2'
-	| kw<'ldc'> '.' kw<'i4'> '.' '3'
-	| kw<'ldc'> '.' kw<'i4'> '.' '4'
-	| kw<'ldc'> '.' kw<'i4'> '.' '5'
-	| kw<'ldc'> '.' kw<'i4'> '.' '6'
-	| kw<'ldc'> '.' kw<'i4'> '.' '7'
-	| kw<'ldc'> '.' kw<'i4'> '.' '8'
+	| kw<'ldc'> '.' 'i4' '.' 'm1'
+	| kw<'ldc'> '.' 'i4' '.' '0'
+	| kw<'ldc'> '.' 'i4' '.' '1'
+	| kw<'ldc'> '.' 'i4' '.' '2'
+	| kw<'ldc'> '.' 'i4' '.' '3'
+	| kw<'ldc'> '.' 'i4' '.' '4'
+	| kw<'ldc'> '.' 'i4' '.' '5'
+	| kw<'ldc'> '.' 'i4' '.' '6'
+	| kw<'ldc'> '.' 'i4' '.' '7'
+	| kw<'ldc'> '.' 'i4' '.' '8'
 	| kw<'dup'>
 	| kw<'pop'>
 	| kw<'ret'>
-	| kw<'ldind'> '.' kw<'i1'>
-	| kw<'ldind'> '.' kw<'u1'>
-	| kw<'ldind'> '.' kw<'i2'>
-	| kw<'ldind'> '.' kw<'u2'>
-	| kw<'ldind'> '.' kw<'i4'>
-	| kw<'ldind'> '.' kw<'u4'>
-	| kw<'ldind'> '.' kw<'i8'>
-	| kw<'ldind'> '.' kw<'i'>
-	| kw<'ldind'> '.' kw<'r4'>
-	| kw<'ldind'> '.' kw<'r8'>
-	| kw<'ldind'> '.' kw<'ref'>
-	| kw<'stind'> '.' kw<'ref'>
-	| kw<'stind'> '.' kw<'i1'>
-	| kw<'stind'> '.' kw<'i2'>
-	| kw<'stind'> '.' kw<'i4'>
-	| kw<'stind'> '.' kw<'i8'>
-	| kw<'stind'> '.' kw<'r4'>
-	| kw<'stind'> '.' kw<'r8'>
+	| kw<'ldind'> '.' 'i1'
+	| kw<'ldind'> '.' 'u1'
+	| kw<'ldind'> '.' 'i2'
+	| kw<'ldind'> '.' 'u2'
+	| kw<'ldind'> '.' 'i4'
+	| kw<'ldind'> '.' 'u4'
+	| kw<'ldind'> '.' 'i8'
+	| kw<'ldind'> '.' 'i'
+	| kw<'ldind'> '.' 'r4'
+	| kw<'ldind'> '.' 'r8'
+	| kw<'ldind'> '.' 'ref'
+	| kw<'stind'> '.' 'ref'
+	| kw<'stind'> '.' 'i1'
+	| kw<'stind'> '.' 'i2'
+	| kw<'stind'> '.' 'i4'
+	| kw<'stind'> '.' 'i8'
+	| kw<'stind'> '.' 'r4'
+	| kw<'stind'> '.' 'r8'
 	| kw<'add'>
 	| kw<'sub'>
 	| kw<'mul'>
 	| kw<'div'>
-	| kw<'div'> '.' kw<'un'>
+	| kw<'div'> '.' 'un'
 	| kw<'rem'>
-	| kw<'rem'> '.' kw<'un'>
+	| kw<'rem'> '.' 'un'
 	| kw<'and'>
 	| kw<'or'>
 	| kw<'xor'>
 	| kw<'shl'>
 	| kw<'shr'>
-	| kw<'shr'> '.' kw<'un'>
+	| kw<'shr'> '.' 'un'
 	| kw<'neg'>
 	| kw<'not'>
-	| kw<'conv'> '.' kw<'i1'>
-	| kw<'conv'> '.' kw<'i2'>
-	| kw<'conv'> '.' kw<'i4'>
-	| kw<'conv'> '.' kw<'i8'>
-	| kw<'conv'> '.' kw<'r4'>
-	| kw<'conv'> '.' kw<'r8'>
-	| kw<'conv'> '.' kw<'u4'>
-	| kw<'conv'> '.' kw<'u8'>
-	| kw<'conv'> '.' kw<'r'> '.' kw<'un'>
+	| kw<'conv'> '.' 'i1'
+	| kw<'conv'> '.' 'i2'
+	| kw<'conv'> '.' 'i4'
+	| kw<'conv'> '.' 'i8'
+	| kw<'conv'> '.' 'r4'
+	| kw<'conv'> '.' 'r8'
+	| kw<'conv'> '.' 'u4'
+	| kw<'conv'> '.' 'u8'
+	| kw<'conv'> '.' 'r' '.' 'un'
 	| kw<'throw'>
-	| kw<'conv'> '.' kw<'ovf'> '.' kw<'i1'> '.' kw<'un'>
-	| kw<'conv'> '.' kw<'ovf'> '.' kw<'i2'> '.' kw<'un'>
-	| kw<'conv'> '.' kw<'ovf'> '.' kw<'i4'> '.' kw<'un'>
-	| kw<'conv'> '.' kw<'ovf'> '.' kw<'i8'> '.' kw<'un'>
-	| kw<'conv'> '.' kw<'ovf'> '.' kw<'u1'> '.' kw<'un'>
-	| kw<'conv'> '.' kw<'ovf'> '.' kw<'u2'> '.' kw<'un'>
-	| kw<'conv'> '.' kw<'ovf'> '.' kw<'u4'> '.' kw<'un'>
-	| kw<'conv'> '.' kw<'ovf'> '.' kw<'u8'> '.' kw<'un'>
-	| kw<'conv'> '.' kw<'ovf'> '.' kw<'i'> '.' kw<'un'>
-	| kw<'conv'> '.' kw<'ovf'> '.' kw<'u'> '.' kw<'un'>
+	| kw<'conv'> '.' 'ovf' '.' 'i1' '.' 'un'
+	| kw<'conv'> '.' 'ovf' '.' 'i2' '.' 'un'
+	| kw<'conv'> '.' 'ovf' '.' 'i4' '.' 'un'
+	| kw<'conv'> '.' 'ovf' '.' 'i8' '.' 'un'
+	| kw<'conv'> '.' 'ovf' '.' 'u1' '.' 'un'
+	| kw<'conv'> '.' 'ovf' '.' 'u2' '.' 'un'
+	| kw<'conv'> '.' 'ovf' '.' 'u4' '.' 'un'
+	| kw<'conv'> '.' 'ovf' '.' 'u8' '.' 'un'
+	| kw<'conv'> '.' 'ovf' '.' 'i' '.' 'un'
+	| kw<'conv'> '.' 'ovf' '.' 'u' '.' 'un'
 	| kw<'ldlen'>
-	| kw<'ldelem'> '.' kw<'i1'>
-	| kw<'ldelem'> '.' kw<'u1'>
-	| kw<'ldelem'> '.' kw<'i2'>
-	| kw<'ldelem'> '.' kw<'u2'>
-	| kw<'ldelem'> '.' kw<'i4'>
-	| kw<'ldelem'> '.' kw<'u4'>
-	| kw<'ldelem'> '.' kw<'i8'>
-	| kw<'ldelem'> '.' kw<'i'>
-	| kw<'ldelem'> '.' kw<'r4'>
-	| kw<'ldelem'> '.' kw<'r8'>
-	| kw<'ldelem'> '.' kw<'ref'>
-	| kw<'stelem'> '.' kw<'i'>
-	| kw<'stelem'> '.' kw<'i1'>
-	| kw<'stelem'> '.' kw<'i2'>
-	| kw<'stelem'> '.' kw<'i4'>
-	| kw<'stelem'> '.' kw<'i8'>
-	| kw<'stelem'> '.' kw<'r4'>
-	| kw<'stelem'> '.' kw<'r8'>
-	| kw<'stelem'> '.' kw<'ref'>
-	| kw<'conv'> '.' kw<'ovf'> '.' kw<'i1'>
-	| kw<'conv'> '.' kw<'ovf'> '.' kw<'u1'>
-	| kw<'conv'> '.' kw<'ovf'> '.' kw<'i2'>
-	| kw<'conv'> '.' kw<'ovf'> '.' kw<'u2'>
-	| kw<'conv'> '.' kw<'ovf'> '.' kw<'i4'>
-	| kw<'conv'> '.' kw<'ovf'> '.' kw<'u4'>
-	| kw<'conv'> '.' kw<'ovf'> '.' kw<'i8'>
-	| kw<'conv'> '.' kw<'ovf'> '.' kw<'u8'>
+	| kw<'ldelem'> '.' 'i1'
+	| kw<'ldelem'> '.' 'u1'
+	| kw<'ldelem'> '.' 'i2'
+	| kw<'ldelem'> '.' 'u2'
+	| kw<'ldelem'> '.' 'i4'
+	| kw<'ldelem'> '.' 'u4'
+	| kw<'ldelem'> '.' 'i8'
+	| kw<'ldelem'> '.' 'i'
+	| kw<'ldelem'> '.' 'r4'
+	| kw<'ldelem'> '.' 'r8'
+	| kw<'ldelem'> '.' 'ref'
+	| kw<'stelem'> '.' 'i'
+	| kw<'stelem'> '.' 'i1'
+	| kw<'stelem'> '.' 'i2'
+	| kw<'stelem'> '.' 'i4'
+	| kw<'stelem'> '.' 'i8'
+	| kw<'stelem'> '.' 'r4'
+	| kw<'stelem'> '.' 'r8'
+	| kw<'stelem'> '.' 'ref'
+	| kw<'conv'> '.' 'ovf' '.' 'i1'
+	| kw<'conv'> '.' 'ovf' '.' 'u1'
+	| kw<'conv'> '.' 'ovf' '.' 'i2'
+	| kw<'conv'> '.' 'ovf' '.' 'u2'
+	| kw<'conv'> '.' 'ovf' '.' 'i4'
+	| kw<'conv'> '.' 'ovf' '.' 'u4'
+	| kw<'conv'> '.' 'ovf' '.' 'i8'
+	| kw<'conv'> '.' 'ovf' '.' 'u8'
 	| kw<'ckfinite'>
-	| kw<'conv'> '.' kw<'u2'>
-	| kw<'conv'> '.' kw<'u1'>
-	| kw<'conv'> '.' kw<'i'>
-	| kw<'conv'> '.' kw<'ovf'> '.' kw<'i'>
-	| kw<'conv'> '.' kw<'ovf'> '.' kw<'u'>
-	| kw<'add'> '.' kw<'ovf'>
-	| kw<'add'> '.' kw<'ovf'> '.' kw<'un'>
-	| kw<'mul'> '.' kw<'ovf'>
-	| kw<'mul'> '.' kw<'ovf'> '.' kw<'un'>
-	| kw<'sub'> '.' kw<'ovf'>
-	| kw<'sub'> '.' kw<'ovf'> '.' kw<'un'>
+	| kw<'conv'> '.' 'u2'
+	| kw<'conv'> '.' 'u1'
+	| kw<'conv'> '.' 'i'
+	| kw<'conv'> '.' 'ovf' '.' 'i'
+	| kw<'conv'> '.' 'ovf' '.' 'u'
+	| kw<'add'> '.' 'ovf'
+	| kw<'add'> '.' 'ovf' '.' 'un'
+	| kw<'mul'> '.' 'ovf'
+	| kw<'mul'> '.' 'ovf' '.' 'un'
+	| kw<'sub'> '.' 'ovf'
+	| kw<'sub'> '.' 'ovf' '.' 'un'
 	| kw<'endfinally'>
-	| kw<'stind'> '.' kw<'i'>
-	| kw<'conv'> '.' kw<'u'>
+	| kw<'stind'> '.' 'i'
+	| kw<'conv'> '.' 'u'
 	| kw<'prefix7'>
 	| kw<'prefix6'>
 	| kw<'prefix5'>
@@ -1042,9 +1042,9 @@ instr_none[@name=OpCode] {
 	| kw<'arglist'>
 	| kw<'ceq'>
 	| kw<'cgt'>
-	| kw<'cgt'> '.' kw<'un'>
+	| kw<'cgt'> '.' 'un'
 	| kw<'clt'>
-	| kw<'clt'> '.' kw<'un'>
+	| kw<'clt'> '.' 'un'
 	| kw<'localloc'>
 	| kw<'endfilter'>
 	| kw<'volatile'> '.'
@@ -1059,12 +1059,12 @@ instr_none[@name=OpCode] {
 }
 
 instr_var[@name=OpCode] {
-	kw<'ldarg'> '.' kw<'s'>
-	| kw<'ldarga'> '.' kw<'s'>
-	| kw<'starg'> '.' kw<'s'>
-	| kw<'ldloc'> '.' kw<'s'>
-	| kw<'ldloca'> '.' kw<'s'>
-	| kw<'stloc'> '.' kw<'s'>
+	kw<'ldarg'> '.' 's'
+	| kw<'ldarga'> '.' 's'
+	| kw<'starg'> '.' 's'
+	| kw<'ldloc'> '.' 's'
+	| kw<'ldloca'> '.' 's'
+	| kw<'stloc'> '.' 's'
 	| kw<'ldarg'>
 	| kw<'ldarga'>
 	| kw<'starg'>
@@ -1074,35 +1074,35 @@ instr_var[@name=OpCode] {
 }
 
 instr_i[@name=OpCode] {
-	kw<'ldc'> '.' kw<'i4'> '.' kw<'s'>
-	| kw<'ldc'> '.' kw<'i4'>
+	kw<'ldc'> '.' 'i4' '.' 's'
+	| kw<'ldc'> '.' 'i4'
 	| kw<'unaligned'> '.'
 	| kw<'no'> '.'
 }
 
 instr_i8[@name=OpCode] {
-	kw<'ldc'> '.' kw<'i8'>
+	kw<'ldc'> '.' 'i8'
 }
 
 instr_r[@name=OpCode] {
-	kw<'ldc'> '.' kw<'r4'>
-	| kw<'ldc'> '.' kw<'r8'>
+	kw<'ldc'> '.' 'r4'
+	| kw<'ldc'> '.' 'r8'
 }
 
 instr_brtarget[@name=OpCode] {
-	kw<'br'> '.' kw<'s'>
-	| kw<'brfalse'> '.' kw<'s'>
-	| kw<'brtrue'> '.' kw<'s'>
-	| kw<'beq'> '.' kw<'s'>
-	| kw<'bge'> '.' kw<'s'>
-	| kw<'bgt'> '.' kw<'s'>
-	| kw<'ble'> '.' kw<'s'>
-	| kw<'blt'> '.' kw<'s'>
-	| kw<'bne'> '.' kw<'un'> '.' kw<'s'>
-	| kw<'bge'> '.' kw<'un'> '.' kw<'s'>
-	| kw<'bgt'> '.' kw<'un'> '.' kw<'s'>
-	| kw<'ble'> '.' kw<'un'> '.' kw<'s'>
-	| kw<'blt'> '.' kw<'un'> '.' kw<'s'>
+	kw<'br'> '.' 's'
+	| kw<'brfalse'> '.' 's'
+	| kw<'brtrue'> '.' 's'
+	| kw<'beq'> '.' 's'
+	| kw<'bge'> '.' 's'
+	| kw<'bgt'> '.' 's'
+	| kw<'ble'> '.' 's'
+	| kw<'blt'> '.' 's'
+	| kw<'bne'> '.' 'un' '.' 's'
+	| kw<'bge'> '.' 'un' '.' 's'
+	| kw<'bgt'> '.' 'un' '.' 's'
+	| kw<'ble'> '.' 'un' '.' 's'
+	| kw<'blt'> '.' 'un' '.' 's'
 	| kw<'br'>
 	| kw<'brfalse'>
 	| kw<'brtrue'>
@@ -1117,7 +1117,7 @@ instr_brtarget[@name=OpCode] {
 	| kw<'ble.un'>
 	| kw<'blt.un'>
 	| kw<'leave'>
-	| kw<'leave'> '.' kw<'s'>
+	| kw<'leave'> '.' 's'
 }
 
 instr_method[@name=OpCode] {
@@ -1154,7 +1154,7 @@ instr_type[@name=OpCode] {
 	| kw<'refanyval'>
 	| kw<'mkrefany'>
 	| kw<'initobj'>
-	| kw<'constrained.'>
+	| kw<'constrained'> '.'
 	| kw<'sizeof'>
 }
 
@@ -1174,7 +1174,7 @@ instr_switch[@name=OpCode] {
 	kw<'switch'>
 }
 
-instr[@name=Instr] {
+instr[@name=Instrction] {
 	instr_none
 	| instr_var int32
 	| instr_var id
@@ -1501,7 +1501,7 @@ intOrWildcard {
 	| '*'
 }
 
-asmOrRefDecl[@name=AsmOrRef] {
+asmOrRefDecl[@name=AsmOrReference] {
 	dkw<'.publickey'> '=' bytesDelim
 	| dkw<'.ver'> intOrWildcard ':' intOrWildcard ':' intOrWildcard ':' intOrWildcard
 	| dkw<'.locale'> compQstring
@@ -1510,7 +1510,7 @@ asmOrRefDecl[@name=AsmOrRef] {
 	| compControl
 }
 
-assemblyRefDecl[@name=AssemblyRef] {
+assemblyRefDecl[@name=AssemblyReference] {
 	dkw<'.assembly'> kw<'extern'> asmAttr* dottedAssemblyName (kw<'as'> dottedName)? assemblyRefBody?
 }
 

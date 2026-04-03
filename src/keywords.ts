@@ -62,12 +62,132 @@ export const memberDecl = [{
     label: ".typedef",
     type: "keyword"
 }, {
+    label: "#line",
+    type: "keyword"
+}, {
+    label: "#define",
+    type: "keyword"
+}, {
+    label: "#undef",
+    type: "keyword"
+}, {
+    label: "#ifdef",
+    type: "keyword"
+}, {
+    label: "#ifndef",
+    type: "keyword"
+}, {
+    label: "#else",
+    type: "keyword"
+}, {
+    label: "#endif",
+    type: "keyword"
+}, {
+    label: "#include",
+    type: "keyword"
+}, {
     label: ".typelist",
     type: "keyword"
 }, {
     label: ".mscorlib",
     type: "keyword"
-}]
+}];
+
+export const classAttr = [{
+    label: "public",
+    type: "keyword"
+}, {
+    label: "private",
+    type: "keyword"
+}, {
+    label: "value",
+    type: "keyword"
+}, {
+    label: "enum",
+    type: "keyword"
+}, {
+    label: "interface",
+    type: "keyword"
+}, {
+    label: "sealed",
+    type: "keyword"
+}, {
+    label: "abstract",
+    type: "keyword"
+}, {
+    label: "auto",
+    type: "keyword"
+}, {
+    label: "sequential",
+    type: "keyword"
+}, {
+    label: "explicit",
+    type: "keyword"
+}, {
+    label: "extended",
+    type: "keyword"
+}, {
+    label: "ansi",
+    type: "keyword"
+}, {
+    label: "unicode",
+    type: "keyword"
+}, {
+    label: "autochar",
+    type: "keyword"
+}, {
+    label: "import",
+    type: "keyword"
+}, {
+    label: "serializable",
+    type: "keyword"
+}, {
+    label: "windowsruntime",
+    type: "keyword"
+}, {
+    label: "nested",
+    type: "keyword"
+}, {
+    label: "beforefieldinit",
+    type: "keyword"
+}, {
+    label: "specialname",
+    type: "keyword"
+}, {
+    label: "rtspecialname",
+    type: "keyword"
+}, {
+    label: "flags",
+    type: "keyword"
+}];
+
+export const classNestAttr = [{
+    label: "public",
+    type: "keyword"
+}, {
+    label: "private",
+    type: "keyword"
+}, {
+    label: "family",
+    type: "keyword"
+}, {
+    label: "assembly",
+    type: "keyword"
+}, {
+    label: "famandassem",
+    type: "keyword"
+}, {
+    label: "famorassem",
+    type: "keyword"
+}];
+
+export const classExtendsDecl = [{
+    label: "extends",
+    type: "keyword"
+}, {
+    label: "implements",
+    type: "keyword"
+}];
 
 export const classMemberDecl = [{
     label: ".method",
@@ -115,9 +235,353 @@ export const classMemberDecl = [{
     label: ".language",
     type: "keyword"
 }, {
+    label: "#line",
+    type: "keyword"
+}, {
+    label: "#define",
+    type: "keyword"
+}, {
+    label: "#undef",
+    type: "keyword"
+}, {
+    label: "#ifdef",
+    type: "keyword"
+}, {
+    label: "#ifndef",
+    type: "keyword"
+}, {
+    label: "#else",
+    type: "keyword"
+}, {
+    label: "#endif",
+    type: "keyword"
+}, {
+    label: "#include",
+    type: "keyword"
+}, {
     label: ".param",
     type: "keyword"
 }, {
     label: ".interfaceimpl",
     type: "keyword"
-}]
+}];
+
+export const eventMemberDecl = [{
+    label: ".addon",
+    type: "keyword"
+}, {
+    label: ".removeon",
+    type: "keyword"
+}, {
+    label: ".fire",
+    type: "keyword"
+}, {
+    label: ".other",
+    type: "keyword"
+}, {
+    label: ".line",
+    type: "keyword"
+}, {
+    label: "#line",
+    type: "keyword"
+}, {
+    label: ".custom",
+    type: "keyword"
+}, {
+    label: ".language",
+    type: "keyword"
+}, {
+    label: "#define",
+    type: "keyword"
+}, {
+    label: "#undef",
+    type: "keyword"
+}, {
+    label: "#ifdef",
+    type: "keyword"
+}, {
+    label: "#ifndef",
+    type: "keyword"
+}, {
+    label: "#else",
+    type: "keyword"
+}, {
+    label: "#endif",
+    type: "keyword"
+}, {
+    label: "#include",
+    type: "keyword"
+}];
+
+export const propMemberDecl = [{
+    label: ".set",
+    type: "keyword"
+}, {
+    label: ".get",
+    type: "keyword"
+}, {
+    label: ".other",
+    type: "keyword"
+}, {
+    label: ".custom",
+    type: "keyword"
+}, {
+    label: ".line",
+    type: "keyword"
+}, {
+    label: "#line",
+    type: "keyword"
+}, {
+    label: ".language",
+    type: "keyword"
+}, {
+    label: "#define",
+    type: "keyword"
+}, {
+    label: "#undef",
+    type: "keyword"
+}, {
+    label: "#ifdef",
+    type: "keyword"
+}, {
+    label: "#ifndef",
+    type: "keyword"
+}, {
+    label: "#else",
+    type: "keyword"
+}, {
+    label: "#endif",
+    type: "keyword"
+}, {
+    label: "#include",
+    type: "keyword"
+}];
+
+export const methodMemberDecl = [{
+    label: ".emitbyte",
+    type: "keyword"
+}, {
+    label: ".try",
+    type: "keyword"
+}, {
+    label: ".maxstack",
+    type: "keyword"
+}, {
+    label: ".locals",
+    type: "keyword"
+}, {
+    label: ".entrypoint",
+    type: "keyword"
+}, {
+    label: ".zeroinit",
+    type: "keyword"
+}, {
+    label: ".data",
+    type: "keyword"
+}, {
+    label: ".permission",
+    type: "keyword"
+}, {
+    label: ".permissionset",
+    type: "keyword"
+}, {
+    label: ".line",
+    type: "keyword"
+}, {
+    label: "#line",
+    type: "keyword"
+}, {
+    label: ".language",
+    type: "keyword"
+}, {
+    label: ".custom",
+    type: "keyword"
+}, {
+    label: "#define",
+    type: "keyword"
+}, {
+    label: "#undef",
+    type: "keyword"
+}, {
+    label: "#ifdef",
+    type: "keyword"
+}, {
+    label: "#ifndef",
+    type: "keyword"
+}, {
+    label: "#else",
+    type: "keyword"
+}, {
+    label: "#endif",
+    type: "keyword"
+}, {
+    label: "#include",
+    type: "keyword"
+}, {
+    label: ".export",
+    type: "keyword"
+}, {
+    label: ".vtentry",
+    type: "keyword"
+}, {
+    label: ".override",
+    type: "keyword"
+}, {
+    label: ".param",
+    type: "keyword"
+}];
+
+export const assemblyMemberDecl = [{
+    label: ".hash",
+    type: "keyword"
+}, {
+    label: ".permission",
+    type: "keyword"
+}, {
+    label: ".permissionset",
+    type: "keyword"
+}, {
+    label: ".publickey",
+    type: "keyword"
+}, {
+    label: ".ver",
+    type: "keyword"
+}, {
+    label: ".locale",
+    type: "keyword"
+}, {
+    label: ".custom",
+    type: "keyword"
+}, {
+    label: "#define",
+    type: "keyword"
+}, {
+    label: "#undef",
+    type: "keyword"
+}, {
+    label: "#ifdef",
+    type: "keyword"
+}, {
+    label: "#ifndef",
+    type: "keyword"
+}, {
+    label: "#else",
+    type: "keyword"
+}, {
+    label: "#endif",
+    type: "keyword"
+}, {
+    label: "#include",
+    type: "keyword"
+}];
+
+export const assemblyRefMemberDecl = [{
+    label: ".hash",
+    type: "keyword"
+}, {
+    label: ".publickey",
+    type: "keyword"
+}, {
+    label: ".ver",
+    type: "keyword"
+}, {
+    label: ".locale",
+    type: "keyword"
+}, {
+    label: ".custom",
+    type: "keyword"
+}, {
+    label: "#define",
+    type: "keyword"
+}, {
+    label: "#undef",
+    type: "keyword"
+}, {
+    label: "#ifdef",
+    type: "keyword"
+}, {
+    label: "#ifndef",
+    type: "keyword"
+}, {
+    label: "#else",
+    type: "keyword"
+}, {
+    label: "#endif",
+    type: "keyword"
+}, {
+    label: "#include",
+    type: "keyword"
+}, {
+    label: ".publickeytoken",
+    type: "keyword"
+}];
+
+export const exptypeMemberDecl = [{
+    label: ".file",
+    type: "keyword"
+}, {
+    label: ".class",
+    type: "keyword"
+}, {
+    label: ".assembly",
+    type: "keyword"
+}, {
+    label: ".mdtoken",
+    type: "keyword"
+}, {
+    label: ".custom",
+    type: "keyword"
+}, {
+    label: "#define",
+    type: "keyword"
+}, {
+    label: "#undef",
+    type: "keyword"
+}, {
+    label: "#ifdef",
+    type: "keyword"
+}, {
+    label: "#ifndef",
+    type: "keyword"
+}, {
+    label: "#else",
+    type: "keyword"
+}, {
+    label: "#endif",
+    type: "keyword"
+}, {
+    label: "#include",
+    type: "keyword"
+}];
+
+export const manifestResMemberDecl = [{
+    label: ".file",
+    type: "keyword"
+}, {
+    label: ".assembly",
+    type: "keyword"
+}, {
+    label: ".custom",
+    type: "keyword"
+}, {
+    label: "#define",
+    type: "keyword"
+}, {
+    label: "#undef",
+    type: "keyword"
+}, {
+    label: "#ifdef",
+    type: "keyword"
+}, {
+    label: "#ifndef",
+    type: "keyword"
+}, {
+    label: "#else",
+    type: "keyword"
+}, {
+    label: "#endif",
+    type: "keyword"
+}, {
+    label: "#include",
+    type: "keyword"
+}];
