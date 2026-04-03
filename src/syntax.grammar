@@ -391,7 +391,7 @@ classDecl[@name=Class] {
 	classBody
 }
 
-classAttr {
+classAttr[@name=ClassAttribute] {
 	kw<'public'>
 	| kw<'private'>
 	| kw<'value'>
@@ -429,18 +429,18 @@ implClause[@name=ClassImplements] {
 	kw<'implements'> implList
 }
 
-implList {
+implList[@name=ImplementationList] {
 	csep1<typeSpec>
 }
 
 /* Generic type parameters declaration */
-typeList {
+typeList[@name=TypeList] {
 	csep1<typeSpec>
 }
 
-typarsClause { chevrons<typars> }
+typarsClause[@name=TypeParametersClause] { chevrons<typars> }
 
-typarAttrib {
+typarAttrib[@name=TypeParameterAttribute] {
 	'+'
 	| '-'
 	| kw<'class'>
@@ -496,7 +496,7 @@ fieldDecl[@name=Field] {
 	| dkw<'.field'> repeatOpt? fieldAttr* type dottedConstName initOpt
 }
 
-fieldAttr {
+fieldAttr[@name=FieldAttribute] {
 	kw<'static'>
 	| kw<'public'>
 	| kw<'private'>
@@ -538,7 +538,7 @@ methodRef[@name=MethodRef] {
 	| mdtoken
 }
 
-callConv {
+callConv[@name=CallingConvention] {
 	kw<'instance'> callConv
 	| kw<'explicit'> callConv
 	| callKind?
@@ -565,7 +565,7 @@ eventDecl[@name=Event] {
 	dkw<'.event'> eventAttr* typeSpec? dottedEventName eventBody
 }
 
-eventAttr {
+eventAttr[@name=EventAttribute] {
 	kw<'rtspecialname'>
 	| kw<'specialname'>
 }
@@ -590,7 +590,7 @@ propDecl[@name=Property] {
 	dkw<'.property'> propAttr* callConv type dottedPropertyName parens<sigArgs0>? initOpt? propBody
 }
 
-propAttr {
+propAttr[@name=PropertyAttribute] {
 	kw<'rtspecialname'>
 	| kw<'specialname'>
 }
@@ -614,11 +614,11 @@ methodDecl[@name=Method] {
 	dkw<'.method'> methAttr* callConv paramAttr* type marshalClause? methodName typarsClause? parens<sigArgs0> implAttr* methodBody
 }
 
-marshalClause {
+marshalClause[@name=MarshalClause] {
 	kw<'marshal'> parens<marshalBlob>
 }
 
-methAttr {
+methAttr[@name=MethodAttribute] {
 	kw<'static'>
 	| kw<'public'>
 	| kw<'private'>
@@ -641,7 +641,7 @@ methAttr {
 	| kw<'pinvokeimpl'> parens<(compQstring (kw<'as'> compQstring)?)? pinvAttr*>
 }
 
-pinvAttr {
+pinvAttr[@name=PinvokeAttribute] {
 	kw<'nomangle'>
 	| kw<'ansi'>
 	| kw<'unicode'>
@@ -656,25 +656,25 @@ pinvAttr {
 	| kw<'flags'> parens<int32>
 }
 
-marshalBlob {
+marshalBlob[@name=MarshalBlob] {
 	nativeType?
 	| braces<ByteLiteral+>
 }
 
-methodName {
+methodName[@name=MethodName] {
 	dkw<'.ctor'>
 	| dkw<'.cctor'>
 	| dottedMethodName
 }
 
-paramAttr {
+paramAttr[@name=ParameterAttribute] {
 	brackets<kw<'in'>>
 	| brackets<kw<'out'>>
 	| brackets<kw<'opt'>>
 	| brackets<int32>
 }
 
-implAttr {
+implAttr[@name=ImplementationAttribute] {
 	kw<'native'>
 	| kw<'cil'>
 	| kw<'optil'>

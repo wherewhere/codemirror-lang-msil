@@ -109,7 +109,13 @@ function manifestResBody(from: number) {
 import {
     classAttr,
     classNestAttr,
-    classExtendsDecl
+    classExtendsDecl,
+    fieldAttr,
+    eventAttr,
+    propAttr,
+    methodAttr,
+    callConv,
+    paramAttr
 } from "./keywords";
 
 function classAttrBody(node: SyntaxNode, context: CompletionContext) {
@@ -148,6 +154,57 @@ function classAttrBody(node: SyntaxNode, context: CompletionContext) {
     return {
         from: node.from,
         options: classAttr
+    };
+}
+
+function fieldAttrBody({ from }: Pick<SyntaxNode, "from">) {
+    return {
+        from,
+        options: fieldAttr
+    };
+}
+
+function eventAttrBody({ from }: Pick<SyntaxNode, "from">) {
+    return {
+        from,
+        options: eventAttr
+    };
+}
+
+function propAttrBody(node: SyntaxNode) {
+    switch (node.prevSibling?.name) {
+        case "CallingConvention":
+            return {
+                from: node.from,
+                options: callConv
+            };
+        default:
+            return {
+                from: node.from,
+                options: [...propAttr, ...callConv]
+            };
+    }
+}
+
+function methodAttrBody(node: SyntaxNode) {
+    switch (node.prevSibling?.name) {
+        case "CallingConvention":
+            return {
+                from: node.from,
+                options: callConv
+            };
+        default:
+            return {
+                from: node.from,
+                options: [...methodAttr, ...callConv]
+            };
+    }
+}
+
+function paramAttrBody({ from }: Pick<SyntaxNode, "from">) {
+    return {
+        from,
+        options: paramAttr
     };
 }
 
@@ -257,10 +314,27 @@ export function autocomplete(context: CompletionContext) {
         if (isAtRoot(node, ["Class", "ClassName"])) {
             return classAttrBody(node, context);
         }
-        const parent = node.parent;
-        if (parent?.name === "Delim" &&
-            (parent.parent?.name === "Method" || parent.parent?.name === "MethodScopeBlock")) {
-            return methodScopeBlock(node, context);
+        let parent = node.parent;
+        switch (parent?.name) {
+            case "Field":
+                return fieldAttrBody(node);
+            case "Event":
+                return eventAttrBody(node);
+            case "Property":
+                return propAttrBody(node);
+            case "Method":
+                return methodAttrBody(node);
+            case "Delim":
+                parent = parent.parent;
+                if (parent) {
+                    if (parent.name === "Method" || parent.name === "MethodScopeBlock") {
+                        return methodScopeBlock(node, context);
+                    }
+                    else if (parent.name === "ParameterAttribute") {
+                        return paramAttrBody(node);
+                    }
+                }
+                break;
         }
     }
 }

@@ -266,6 +266,61 @@ export const classMemberDecl = [{
     type: "keyword"
 }];
 
+export const fieldAttr = [{
+    label: "static",
+    type: "keyword"
+}, {
+    label: "public",
+    type: "keyword"
+}, {
+    label: "private",
+    type: "keyword"
+}, {
+    label: "family",
+    type: "keyword"
+}, {
+    label: "initonly",
+    type: "keyword"
+}, {
+    label: "rtspecialname",
+    type: "keyword"
+}, {
+    label: "specialname",
+    type: "keyword"
+}, {
+    label: "marshal",
+    type: "keyword"
+}, {
+    label: "assembly",
+    type: "keyword"
+}, {
+    label: "famandassem",
+    type: "keyword"
+}, {
+    label: "famorassem",
+    type: "keyword"
+}, {
+    label: "privatescope",
+    type: "keyword"
+}, {
+    label: "literal",
+    type: "keyword"
+}, {
+    label: "notserialized",
+    type: "keyword"
+}, {
+    label: "flags",
+    type: "keyword"
+}];
+
+export const eventAttr = [{
+    label: "rtspecialname",
+    type: "keyword"
+}, {
+    label: "specialname",
+    type: "keyword"
+}];
+
 export const eventMemberDecl = [{
     label: ".addon",
     type: "keyword"
@@ -313,6 +368,14 @@ export const eventMemberDecl = [{
     type: "keyword"
 }];
 
+export const propAttr = [{
+    label: "rtspecialname",
+    type: "keyword"
+}, {
+    label: "specialname",
+    type: "keyword"
+}];
+
 export const propMemberDecl = [{
     label: ".set",
     type: "keyword"
@@ -354,6 +417,111 @@ export const propMemberDecl = [{
     type: "keyword"
 }, {
     label: "#include",
+    type: "keyword"
+}];
+
+export const methodAttr = [{
+    label: "static",
+    type: "keyword"
+}, {
+    label: "public",
+    type: "keyword"
+}, {
+    label: "private",
+    type: "keyword"
+}, {
+    label: "family",
+    type: "keyword"
+}, {
+    label: "final",
+    type: "keyword"
+}, {
+    label: "specialname",
+    type: "keyword"
+}, {
+    label: "virtual",
+    type: "keyword"
+}, {
+    label: "strict",
+    type: "keyword"
+}, {
+    label: "abstract",
+    type: "keyword"
+}, {
+    label: "assembly",
+    type: "keyword"
+}, {
+    label: "famandassem",
+    type: "keyword"
+}, {
+    label: "famorassem",
+    type: "keyword"
+}, {
+    label: "privatescope",
+    type: "keyword"
+}, {
+    label: "hidebysig",
+    type: "keyword"
+}, {
+    label: "newslot",
+    type: "keyword"
+}, {
+    label: "rtspecialname",
+    type: "keyword"
+}, {
+    label: "unmanagedexp",
+    type: "keyword"
+}, {
+    label: "reqsecobj",
+    type: "keyword"
+}, {
+    label: "flags",
+    type: "keyword"
+}, {
+    label: "pinvokeimpl",
+    type: "keyword"
+}];
+
+export const callConv = [{
+    label: "instance",
+    type: "keyword"
+}, {
+    label: "explicit",
+    type: "keyword"
+}, {
+    label: "default",
+    type: "keyword"
+}, {
+    label: "vararg",
+    type: "keyword"
+}, {
+    label: "unmanaged",
+    type: "keyword"
+}, {
+    label: "cdecl",
+    type: "keyword"
+}, {
+    label: "stdcall",
+    type: "keyword"
+}, {
+    label: "thiscall",
+    type: "keyword"
+}, {
+    label: "fastcall",
+    type: "keyword"
+}, {
+    label: "callconv",
+    type: "keyword"
+}];
+
+export const paramAttr = [{
+    label: "in",
+    type: "keyword"
+}, {
+    label: "out",
+    type: "keyword"
+}, {
+    label: "opt",
     type: "keyword"
 }];
 
