@@ -1,3 +1,34 @@
+export const compControl = [{
+    label: "#define",
+    type: "keyword"
+}, {
+    label: "#undef",
+    type: "keyword"
+}, {
+    label: "#ifdef",
+    type: "keyword"
+}, {
+    label: "#ifndef",
+    type: "keyword"
+}, {
+    label: "#else",
+    type: "keyword"
+}, {
+    label: "#endif",
+    type: "keyword"
+}, {
+    label: "#include",
+    type: "keyword"
+}];
+
+export const esHead = [{
+    label: ".line",
+    type: "keyword"
+}, {
+    label: "#line",
+    type: "keyword"
+}];
+
 export const memberDecl = [{
     label: ".class",
     type: "keyword"
@@ -19,10 +50,7 @@ export const memberDecl = [{
 }, {
     label: ".vtfixup",
     type: "keyword"
-}, {
-    label: ".line",
-    type: "keyword"
-}, {
+}, ...esHead, {
     label: ".file",
     type: "keyword"
 }, {
@@ -61,31 +89,7 @@ export const memberDecl = [{
 }, {
     label: ".typedef",
     type: "keyword"
-}, {
-    label: "#line",
-    type: "keyword"
-}, {
-    label: "#define",
-    type: "keyword"
-}, {
-    label: "#undef",
-    type: "keyword"
-}, {
-    label: "#ifdef",
-    type: "keyword"
-}, {
-    label: "#ifndef",
-    type: "keyword"
-}, {
-    label: "#else",
-    type: "keyword"
-}, {
-    label: "#endif",
-    type: "keyword"
-}, {
-    label: "#include",
-    type: "keyword"
-}, {
+}, ...compControl, {
     label: ".typelist",
     type: "keyword"
 }, {
@@ -145,7 +149,22 @@ export const classAttr = [{
     label: "windowsruntime",
     type: "keyword"
 }, {
-    label: "nested",
+    label: "nested public",
+    type: "keyword"
+}, {
+    label: "nested private",
+    type: "keyword"
+}, {
+    label: "nested family",
+    type: "keyword"
+}, {
+    label: "nested assembly",
+    type: "keyword"
+}, {
+    label: "nested famandassem",
+    type: "keyword"
+}, {
+    label: "nested famorassem",
     type: "keyword"
 }, {
     label: "beforefieldinit",
@@ -158,26 +177,6 @@ export const classAttr = [{
     type: "keyword"
 }, {
     label: "flags",
-    type: "keyword"
-}];
-
-export const classNestAttr = [{
-    label: "public",
-    type: "keyword"
-}, {
-    label: "private",
-    type: "keyword"
-}, {
-    label: "family",
-    type: "keyword"
-}, {
-    label: "assembly",
-    type: "keyword"
-}, {
-    label: "famandassem",
-    type: "keyword"
-}, {
-    label: "famorassem",
     type: "keyword"
 }];
 
@@ -213,10 +212,7 @@ export const classMemberDecl = [{
 }, {
     label: ".permissionset",
     type: "keyword"
-}, {
-    label: ".line",
-    type: "keyword"
-}, {
+}, ...esHead, {
     label: ".custom",
     type: "keyword"
 }, {
@@ -234,31 +230,7 @@ export const classMemberDecl = [{
 }, {
     label: ".language",
     type: "keyword"
-}, {
-    label: "#line",
-    type: "keyword"
-}, {
-    label: "#define",
-    type: "keyword"
-}, {
-    label: "#undef",
-    type: "keyword"
-}, {
-    label: "#ifdef",
-    type: "keyword"
-}, {
-    label: "#ifndef",
-    type: "keyword"
-}, {
-    label: "#else",
-    type: "keyword"
-}, {
-    label: "#endif",
-    type: "keyword"
-}, {
-    label: "#include",
-    type: "keyword"
-}, {
+}, ...compControl, {
     label: ".param",
     type: "keyword"
 }, {
@@ -313,6 +285,64 @@ export const fieldAttr = [{
     type: "keyword"
 }];
 
+export const fieldSerInit = [{
+    label: "float32",
+    type: "keyword"
+}, {
+    label: "float64",
+    type: "keyword"
+}, {
+    label: "int64",
+    type: "keyword"
+}, {
+    label: "int32",
+    type: "keyword"
+}, {
+    label: "int16",
+    type: "keyword"
+}, {
+    label: "int8",
+    type: "keyword"
+}, {
+    label: "unsigned int64",
+    type: "keyword"
+}, {
+    label: "unsigned int32",
+    type: "keyword"
+}, {
+    label: "unsigned int16",
+    type: "keyword"
+}, {
+    label: "unsigned int8",
+    type: "keyword"
+}, {
+    label: "uint64",
+    type: "keyword"
+}, {
+    label: "uint32",
+    type: "keyword"
+}, {
+    label: "uint16",
+    type: "keyword"
+}, {
+    label: "uint8",
+    type: "keyword"
+}, {
+    label: "char",
+    type: "keyword"
+}, {
+    label: "bool",
+    type: "keyword"
+}, {
+    label: "bytearray",
+    type: "keyword"
+}];
+
+export const fieldInit = fieldSerInit.concat([{
+    label: "nullref",
+    type: "keyword"
+}]);
+
 export const eventAttr = [{
     label: "rtspecialname",
     type: "keyword"
@@ -333,40 +363,13 @@ export const eventMemberDecl = [{
 }, {
     label: ".other",
     type: "keyword"
-}, {
-    label: ".line",
-    type: "keyword"
-}, {
-    label: "#line",
-    type: "keyword"
-}, {
+}, ...esHead, {
     label: ".custom",
     type: "keyword"
 }, {
     label: ".language",
     type: "keyword"
-}, {
-    label: "#define",
-    type: "keyword"
-}, {
-    label: "#undef",
-    type: "keyword"
-}, {
-    label: "#ifdef",
-    type: "keyword"
-}, {
-    label: "#ifndef",
-    type: "keyword"
-}, {
-    label: "#else",
-    type: "keyword"
-}, {
-    label: "#endif",
-    type: "keyword"
-}, {
-    label: "#include",
-    type: "keyword"
-}];
+}, ...compControl];
 
 export const propAttr = [{
     label: "rtspecialname",
@@ -388,37 +391,10 @@ export const propMemberDecl = [{
 }, {
     label: ".custom",
     type: "keyword"
-}, {
-    label: ".line",
-    type: "keyword"
-}, {
-    label: "#line",
-    type: "keyword"
-}, {
+}, ...esHead, {
     label: ".language",
     type: "keyword"
-}, {
-    label: "#define",
-    type: "keyword"
-}, {
-    label: "#undef",
-    type: "keyword"
-}, {
-    label: "#ifdef",
-    type: "keyword"
-}, {
-    label: "#ifndef",
-    type: "keyword"
-}, {
-    label: "#else",
-    type: "keyword"
-}, {
-    label: "#endif",
-    type: "keyword"
-}, {
-    label: "#include",
-    type: "keyword"
-}];
+}, ...compControl];
 
 export const methodAttr = [{
     label: "static",
@@ -525,6 +501,56 @@ export const paramAttr = [{
     type: "keyword"
 }];
 
+export const implAttr = [{
+    label: "native",
+    type: "keyword"
+}, {
+    label: "cil",
+    type: "keyword"
+}, {
+    label: "optil",
+    type: "keyword"
+}, {
+    label: "managed",
+    type: "keyword"
+}, {
+    label: "unmanaged",
+    type: "keyword"
+}, {
+    label: "forwardref",
+    type: "keyword"
+}, {
+    label: "preservesig",
+    type: "keyword"
+}, {
+    label: "runtime",
+    type: "keyword"
+}, {
+    label: "internalcall",
+    type: "keyword"
+}, {
+    label: "synchronized",
+    type: "keyword"
+}, {
+    label: "noinlining",
+    type: "keyword"
+}, {
+    label: "aggressiveinlining",
+    type: "keyword"
+}, {
+    label: "nooptimization",
+    type: "keyword"
+}, {
+    label: "aggressiveoptimization",
+    type: "keyword"
+}, {
+    label: "async",
+    type: "keyword"
+}, {
+    label: "flags",
+    type: "keyword"
+}];
+
 export const methodMemberDecl = [{
     label: ".emitbyte",
     type: "keyword"
@@ -552,40 +578,13 @@ export const methodMemberDecl = [{
 }, {
     label: ".permissionset",
     type: "keyword"
-}, {
-    label: ".line",
-    type: "keyword"
-}, {
-    label: "#line",
-    type: "keyword"
-}, {
+}, ...esHead, {
     label: ".language",
     type: "keyword"
 }, {
     label: ".custom",
     type: "keyword"
-}, {
-    label: "#define",
-    type: "keyword"
-}, {
-    label: "#undef",
-    type: "keyword"
-}, {
-    label: "#ifdef",
-    type: "keyword"
-}, {
-    label: "#ifndef",
-    type: "keyword"
-}, {
-    label: "#else",
-    type: "keyword"
-}, {
-    label: "#endif",
-    type: "keyword"
-}, {
-    label: "#include",
-    type: "keyword"
-}, {
+}, ...compControl, {
     label: ".export",
     type: "keyword"
 }, {
@@ -620,28 +619,7 @@ export const assemblyMemberDecl = [{
 }, {
     label: ".custom",
     type: "keyword"
-}, {
-    label: "#define",
-    type: "keyword"
-}, {
-    label: "#undef",
-    type: "keyword"
-}, {
-    label: "#ifdef",
-    type: "keyword"
-}, {
-    label: "#ifndef",
-    type: "keyword"
-}, {
-    label: "#else",
-    type: "keyword"
-}, {
-    label: "#endif",
-    type: "keyword"
-}, {
-    label: "#include",
-    type: "keyword"
-}];
+}, ...compControl];
 
 export const assemblyRefMemberDecl = [{
     label: ".hash",
@@ -658,28 +636,7 @@ export const assemblyRefMemberDecl = [{
 }, {
     label: ".custom",
     type: "keyword"
-}, {
-    label: "#define",
-    type: "keyword"
-}, {
-    label: "#undef",
-    type: "keyword"
-}, {
-    label: "#ifdef",
-    type: "keyword"
-}, {
-    label: "#ifndef",
-    type: "keyword"
-}, {
-    label: "#else",
-    type: "keyword"
-}, {
-    label: "#endif",
-    type: "keyword"
-}, {
-    label: "#include",
-    type: "keyword"
-}, {
+}, ...compControl, {
     label: ".publickeytoken",
     type: "keyword"
 }];
@@ -699,28 +656,7 @@ export const exptypeMemberDecl = [{
 }, {
     label: ".custom",
     type: "keyword"
-}, {
-    label: "#define",
-    type: "keyword"
-}, {
-    label: "#undef",
-    type: "keyword"
-}, {
-    label: "#ifdef",
-    type: "keyword"
-}, {
-    label: "#ifndef",
-    type: "keyword"
-}, {
-    label: "#else",
-    type: "keyword"
-}, {
-    label: "#endif",
-    type: "keyword"
-}, {
-    label: "#include",
-    type: "keyword"
-}];
+}, ...compControl];
 
 export const manifestResMemberDecl = [{
     label: ".file",
@@ -731,25 +667,351 @@ export const manifestResMemberDecl = [{
 }, {
     label: ".custom",
     type: "keyword"
-}, {
-    label: "#define",
+}, ...compControl];
+
+export const type = [{
+    label: "class",
     type: "keyword"
 }, {
-    label: "#undef",
+    label: "valuetype",
     type: "keyword"
 }, {
-    label: "#ifdef",
+    label: "object",
     type: "keyword"
 }, {
-    label: "#ifndef",
+    label: "pinned",
     type: "keyword"
 }, {
-    label: "#else",
+    label: "typedref",
     type: "keyword"
 }, {
-    label: "#endif",
+    label: "void",
     type: "keyword"
 }, {
-    label: "#include",
+    label: "value class",
+    type: "keyword"
+}, {
+    label: "native unsigned int",
+    type: "keyword"
+}, {
+    label: "native uint",
     type: "keyword"
 }];
+
+export const simpleType = [{
+    label: "char",
+    type: "keyword"
+}, {
+    label: "string",
+    type: "keyword"
+}, {
+    label: "bool",
+    type: "keyword"
+}, {
+    label: "int8",
+    type: "keyword"
+}, {
+    label: "int16",
+    type: "keyword"
+}, {
+    label: "int32",
+    type: "keyword"
+}, {
+    label: "int64",
+    type: "keyword"
+}, {
+    label: "float32",
+    type: "keyword"
+}, {
+    label: "float64",
+    type: "keyword"
+}, {
+    label: "unsigned",
+    type: "keyword"
+}, {
+    label: "uint8",
+    type: "keyword"
+}, {
+    label: "uint16",
+    type: "keyword"
+}, {
+    label: "uint32",
+    type: "keyword"
+}, {
+    label: "uint64",
+    type: "keyword"
+}];
+
+export const nativeType = [{
+    label: "custom",
+    type: "keyword"
+}, {
+    label: "fixed sysstring",
+    type: "keyword"
+}, {
+    label: "fixed array",
+    type: "keyword"
+}, {
+    label: "variant",
+    type: "keyword"
+}, {
+    label: "currency",
+    type: "keyword"
+}, {
+    label: "syschar",
+    type: "keyword"
+}, {
+    label: "void",
+    type: "keyword"
+}, {
+    label: "bool",
+    type: "keyword"
+}, {
+    label: "int8",
+    type: "keyword"
+}, {
+    label: "int16",
+    type: "keyword"
+}, {
+    label: "int32",
+    type: "keyword"
+}, {
+    label: "int64",
+    type: "keyword"
+}, {
+    label: "float32",
+    type: "keyword"
+}, {
+    label: "float64",
+    type: "keyword"
+}, {
+    label: "error",
+    type: "keyword"
+}, {
+    label: "unsigned int",
+    type: "keyword"
+}, {
+    label: "unsigned int8",
+    type: "keyword"
+}, {
+    label: "unsigned int16",
+    type: "keyword"
+}, {
+    label: "unsigned int32",
+    type: "keyword"
+}, {
+    label: "unsigned int64",
+    type: "keyword"
+}, {
+    label: "uint8",
+    type: "keyword"
+}, {
+    label: "uint16",
+    type: "keyword"
+}, {
+    label: "uint32",
+    type: "keyword"
+}, {
+    label: "uint64",
+    type: "keyword"
+}, {
+    label: "decimal",
+    type: "keyword"
+}, {
+    label: "date",
+    type: "keyword"
+}, {
+    label: "bstr",
+    type: "keyword"
+}, {
+    label: "lpstr",
+    type: "keyword"
+}, {
+    label: "lpwstr",
+    type: "keyword"
+}, {
+    label: "lptstr",
+    type: "keyword"
+}, {
+    label: "objectref",
+    type: "keyword"
+}, {
+    label: "iunknown",
+    type: "keyword"
+}, {
+    label: "idispatch",
+    type: "keyword"
+}, {
+    label: "interface",
+    type: "keyword"
+}, {
+    label: "struct",
+    type: "keyword"
+}, {
+    label: "safearray",
+    type: "keyword"
+}, {
+    label: "int",
+    type: "keyword"
+}, {
+    label: "uint",
+    type: "keyword"
+}, {
+    label: "nested struct",
+    type: "keyword"
+}, {
+    label: "byvalstr",
+    type: "keyword"
+}, {
+    label: "ansi bstr",
+    type: "keyword"
+}, {
+    label: "tbstr",
+    type: "keyword"
+}, {
+    label: "variant bool",
+    type: "keyword"
+}, {
+    label: "method",
+    type: "keyword"
+}, {
+    label: "as any",
+    type: "keyword"
+}, {
+    label: "lpstruct",
+    type: "keyword"
+}];
+
+export const variantType = [{
+    label: "null",
+    type: "keyword"
+}, {
+    label: "variant",
+    type: "keyword"
+}, {
+    label: "currency",
+    type: "keyword"
+}, {
+    label: "void",
+    type: "keyword"
+}, {
+    label: "bool",
+    type: "keyword"
+}, {
+    label: "int8",
+    type: "keyword"
+}, {
+    label: "int16",
+    type: "keyword"
+}, {
+    label: "int32",
+    type: "keyword"
+}, {
+    label: "int64",
+    type: "keyword"
+}, {
+    label: "float32",
+    type: "keyword"
+}, {
+    label: "float64",
+    type: "keyword"
+}, {
+    label: "unsigned int8",
+    type: "keyword"
+}, {
+    label: "unsigned int16",
+    type: "keyword"
+}, {
+    label: "unsigned int32",
+    type: "keyword"
+}, {
+    label: "unsigned int64",
+    type: "keyword"
+}, {
+    label: "uint8",
+    type: "keyword"
+}, {
+    label: "uint16",
+    type: "keyword"
+}, {
+    label: "uint32",
+    type: "keyword"
+}, {
+    label: "uint64",
+    type: "keyword"
+}, {
+    label: "decimal",
+    type: "keyword"
+}, {
+    label: "date",
+    type: "keyword"
+}, {
+    label: "bstr",
+    type: "keyword"
+}, {
+    label: "lpstr",
+    type: "keyword"
+}, {
+    label: "lpwstr",
+    type: "keyword"
+}, {
+    label: "iunknown",
+    type: "keyword"
+}, {
+    label: "idispatch",
+    type: "keyword"
+}, {
+    label: "safearray",
+    type: "keyword"
+}, {
+    label: "int",
+    type: "keyword"
+}, {
+    label: "unsigned int",
+    type: "keyword"
+}, {
+    label: "uint",
+    type: "keyword"
+}, {
+    label: "error",
+    type: "keyword"
+}, {
+    label: "hresult",
+    type: "keyword"
+}, {
+    label: "carray",
+    type: "keyword"
+}, {
+    label: "userdefined",
+    type: "keyword"
+}, {
+    label: "record",
+    type: "keyword"
+}, {
+    label: "filetime",
+    type: "keyword"
+}, {
+    label: "blob",
+    type: "keyword"
+}, {
+    label: "stream",
+    type: "keyword"
+}, {
+    label: "storage",
+    type: "keyword"
+}, {
+    label: "streamed_object",
+    type: "keyword"
+}, {
+    label: "stored_object",
+    type: "keyword"
+}, {
+    label: "blob_object",
+    type: "keyword"
+}, {
+    label: "cf",
+    type: "keyword"
+}, {
+    label: "clsid",
+    type: "keyword"
+}]

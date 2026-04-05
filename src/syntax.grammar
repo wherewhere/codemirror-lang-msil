@@ -228,7 +228,7 @@ dottedNameBase {
 	sep1<idBase, '.'>
 }
 
-dottedName[@name=TypeIdentifier] {
+dottedName[@name=IdentifierName] {
 	dottedNameBase
 }
 
@@ -272,6 +272,10 @@ dottedEventName[@name=EventName] {
 	dottedNameBase
 }
 
+dottedMacroName[@name=MacroName] {
+	dottedNameBase
+}
+
 int32 {
 	IntegerLiteral
 }
@@ -293,11 +297,11 @@ typedefDecl[@name=TypeDefine] {
 
 /* Compilation control directives are processed within yylex(), displayed here just for grammar completeness */
 compControl	{
-	P_DEFINE dottedName
-	| P_DEFINE dottedName compQstring
-	| P_UNDEF dottedName
-	| P_IFDEF dottedName
-	| P_IFNDEF dottedName
+	P_DEFINE dottedMacroName
+	| P_DEFINE dottedMacroName compQstring
+	| P_UNDEF dottedMacroName
+	| P_IFDEF dottedMacroName
+	| P_IFNDEF dottedMacroName
 	| P_ELSE
 	| P_ENDIF
 	| P_INCLUDE QSTRING
@@ -520,10 +524,10 @@ fieldAttr[@name=FieldAttribute] {
 }
 
 atOpt {
-	'at' id
+	kw<'at'> id
 }
 
-initOpt {
+initOpt[@name=InitOption] {
 	'=' fieldInit
 }
 
@@ -611,8 +615,10 @@ propMemberDecl {
 
 /* Method declaration */
 methodDecl[@name=Method] {
-	dkw<'.method'> methAttr* callConv paramAttr* type marshalClause? methodName typarsClause? parens<sigArgs0> implAttr* methodBody
+	dkw<'.method'> methAttr* callConv paramAttr* type marshalClause? methodName typarsClause? methodArgs implAttr* methodBody
 }
+
+methodArgs[@name=MethodArguments] { parens<sigArgs0> }
 
 marshalClause[@name=MarshalClause] {
 	kw<'marshal'> parens<marshalBlob>
@@ -701,7 +707,7 @@ methodMemberDecl {
 	dkw<'.emitbyte'> int32
 	| sehBlock
 	| dkw<'.maxstack'> int32
-	| dkw<'.locals'> kw<'init'>? parens<sigArgs0>
+	| dkw<'.locals'> kw<'init'>? localVars
 	| dkw<'.entrypoint'>
 	| dkw<'.zeroinit'>
 	| dataDecl
@@ -723,6 +729,8 @@ methodMemberDecl {
 
 	| dkw<'.param'> brackets<int32> initOpt
 }
+
+localVars[@name=LocalVariables] { parens<sigArgs0> }
 
 scopeBlock[@name=MethodScopeBlock] {
 	braces<methodMemberDecl*>
@@ -1111,11 +1119,11 @@ instr_brtarget[@name=OpCode] {
 	| kw<'bgt'>
 	| kw<'ble'>
 	| kw<'blt'>
-	| kw<'bne.un'>
-	| kw<'bge.un'>
-	| kw<'bgt.un'>
-	| kw<'ble.un'>
-	| kw<'blt.un'>
+	| kw<'bne'> '.' 'un'
+	| kw<'bge'> '.' 'un'
+	| kw<'bgt'> '.' 'un'
+	| kw<'ble'> '.' 'un'
+	| kw<'blt'> '.' 'un'
 	| kw<'leave'>
 	| kw<'leave'> '.' 's'
 }
@@ -1150,7 +1158,7 @@ instr_type[@name=OpCode] {
 	| kw<'ldelema'>
 	| kw<'ldelem'>
 	| kw<'stelem'>
-	| kw<'unbox.any'>
+	| kw<'unbox'> '.' 'any'
 	| kw<'refanyval'>
 	| kw<'mkrefany'>
 	| kw<'initobj'>
@@ -1177,7 +1185,7 @@ instr_switch[@name=OpCode] {
 instr[@name=Instrction] {
 	instr_none
 	| instr_var int32
-	| instr_var id
+	| instr_var paramNameId
 	| instr_i int32
 	| instr_i8 int64
 	| instr_r float64
@@ -1211,7 +1219,7 @@ tyArgs2 { csep1<type> }
 
 sigArgs0 { csep0<sigArg> }
 
-sigArg {
+sigArg[@name=SignatureArgument] {
 	'...'
 	| paramAttr* type marshalClause? paramNameId?
 }
@@ -1233,7 +1241,7 @@ slashedName {
 	sep1<dottedName, '/'>
 }
 
-typeSpec {
+typeSpec[@name=TypeSpec] {
 	className
 	| brackets<dottedAssemblyName> !typeSpecAssemblyOnly
 	| brackets<dkw<'.module'> dottedModuleName> !typeSpecAssemblyOnly

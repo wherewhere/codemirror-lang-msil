@@ -1,6 +1,6 @@
 {
   "name": "codemirror-lang-msil",
-  "version": "0.0.1-beta.1",
+  "version": "0.0.1-beta.2",
   "description": "A IL mode for CodeMirror 6",
   "type": "module",
   "main": "dist/index.cjs",

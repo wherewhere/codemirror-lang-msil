@@ -12,13 +12,6 @@ import {
     manifestResMemberDecl
 } from "./keywords";
 
-function findDescendant(node: SyntaxNode, nodes: readonly string[]) {
-    for (let pos: SyntaxNode | null = node; pos; pos = pos.parent) {
-        if (nodes.indexOf(pos.name) > -1) { return pos; }
-        if (pos.type.isTop) { break; }
-    }
-}
-
 function findPrevSibling(node: SyntaxNode, nodes: readonly string[]) {
     for (let pos: SyntaxNode | null = node; pos; pos = pos.prevSibling) {
         if (nodes.indexOf(pos.name) > -1) { return pos; }
@@ -108,17 +101,18 @@ function manifestResBody(from: number) {
 
 import {
     classAttr,
-    classNestAttr,
     classExtendsDecl,
     fieldAttr,
+    fieldInit,
     eventAttr,
     propAttr,
     methodAttr,
+    implAttr,
     callConv,
     paramAttr
 } from "./keywords";
 
-function classAttrBody(node: SyntaxNode, context: CompletionContext) {
+function classAttrBody(node: SyntaxNode) {
     if (node.parent?.name === '⚠') {
         node = node.parent;
     }
@@ -127,24 +121,7 @@ function classAttrBody(node: SyntaxNode, context: CompletionContext) {
         if (prevSibling.name === '⚠') {
             prevSibling = prevSibling.prevSibling;
         }
-        if (prevSibling) {
-            const code = context.state.sliceDoc(prevSibling.from, prevSibling.to);
-            if (code === "nested") {
-                return {
-                    from: node.from,
-                    options: classNestAttr
-                };
-            }
-            if (findPrevSibling(prevSibling, ["ClassName"])) {
-                return {
-                    from: node.from,
-                    options: classExtendsDecl
-                };
-            }
-        }
-    }
-    else if (node.name === '⚠') {
-        if (node.parent?.name === "ClassName") {
+        if (prevSibling && findPrevSibling(prevSibling, ["ClassName"])) {
             return {
                 from: node.from,
                 options: classExtendsDecl
@@ -157,46 +134,67 @@ function classAttrBody(node: SyntaxNode, context: CompletionContext) {
     };
 }
 
+import {
+    type,
+    simpleType,
+    nativeType,
+    variantType
+} from "./keywords";
+const typeOptions = type.concat(simpleType);
+
 function fieldAttrBody({ from }: Pick<SyntaxNode, "from">) {
     return {
         from,
-        options: fieldAttr
+        options: fieldAttr.concat(typeOptions)
     };
 }
 
 function eventAttrBody({ from }: Pick<SyntaxNode, "from">) {
     return {
         from,
-        options: eventAttr
+        options: eventAttr.concat(typeOptions)
     };
 }
 
 function propAttrBody(node: SyntaxNode) {
     switch (node.prevSibling?.name) {
+        case "Keyword":
+            return {
+                from: node.from,
+                options: propAttr.concat(callConv)
+            };
         case "CallingConvention":
             return {
                 from: node.from,
                 options: callConv
-            };
-        default:
-            return {
-                from: node.from,
-                options: [...propAttr, ...callConv]
             };
     }
 }
 
+function initOptionBody({ from }: Pick<SyntaxNode, "from">) {
+    return {
+        from,
+        options: fieldInit
+    };
+}
+
 function methodAttrBody(node: SyntaxNode) {
     switch (node.prevSibling?.name) {
+        case "Keyword":
+            return {
+                from: node.from,
+                options: methodAttr.concat(callConv, typeOptions)
+            };
         case "CallingConvention":
             return {
                 from: node.from,
-                options: callConv
+                options: callConv.concat(typeOptions)
             };
-        default:
+        case "MethodArguments":
+        case "ImplementationAttribute":
             return {
                 from: node.from,
-                options: [...methodAttr, ...callConv]
+                options: implAttr
             };
     }
 }
@@ -206,6 +204,64 @@ function paramAttrBody({ from }: Pick<SyntaxNode, "from">) {
         from,
         options: paramAttr
     };
+}
+
+function marshalClauseBody(node: SyntaxNode, context: CompletionContext) {
+    const prevSibling = node.prevSibling;
+    if (prevSibling?.name === "Keyword") {
+        const code = context.state.sliceDoc(prevSibling.from, prevSibling.to);
+        if (code === "safearray") {
+            return {
+                from: node.from,
+                options: variantType
+            }
+        }
+    }
+    else {
+        const prevSibling = node.parent?.prevSibling;
+        if (prevSibling?.name === "MarshalClause") {
+            const delim = node.parent?.prevSibling?.getChild("Delim");
+            if (delim) {
+                const keyword = delim.getChild("MarshalBlob")?.lastChild;
+                if (keyword) {
+                    const code = context.state.sliceDoc(keyword.from, keyword.to);
+                    if (code === "safearray") {
+                        return {
+                            from: node.from,
+                            options: variantType
+                        }
+                    }
+                }
+                if (delim.lastChild?.name === ')') {
+                    return;
+                }
+            }
+        }
+    }
+    return {
+        from: node.from,
+        options: nativeType
+    };
+}
+
+function sigArgsBody(node: SyntaxNode, context: CompletionContext) {
+    switch (node.prevSibling?.name) {
+        case "Type":
+            return {
+                from: node.from,
+                options: [{
+                    label: "marshal",
+                    type: "keyword"
+                }]
+            };
+        case "MarshalClause":
+            return;
+        default:
+            return {
+                from: node.from,
+                options: paramAttr.concat(typeOptions)
+            };
+    }
 }
 
 import { opcodes } from "./instructions";
@@ -250,7 +306,7 @@ function methodScopeBlock(node: SyntaxNode, context: CompletionContext) {
             return;
         }
     }
-    const result: Completion[] = [];
+    const result: { label: string; type: string; info?: string }[] = [];
     for (const key in opcode) {
         if (key === "desc") {
             continue;
@@ -267,6 +323,20 @@ function methodScopeBlock(node: SyntaxNode, context: CompletionContext) {
             from: node.name === '.' ? node.to : node.from,
             options: result
         };
+    }
+}
+
+function typeSpecBody(node: SyntaxNode, context: CompletionContext) {
+    const name = node.parent?.parent?.name;
+    if (name === "TypeSpec" || name === "Type") {
+        return typeBody(node, context);
+    }
+}
+
+function typeBody(node: SyntaxNode, context: CompletionContext) {
+    return {
+        from: node.from,
+        options: typeOptions
     }
 }
 
@@ -311,10 +381,13 @@ export function autocomplete(context: CompletionContext) {
         }
     }
     else if (code.match(/^\w/)) {
-        if (isAtRoot(node, ["Class", "ClassName"])) {
-            return classAttrBody(node, context);
+        if (isAtRoot(node, ["Class"])) {
+            return classAttrBody(node);
         }
-        let parent = node.parent;
+        else if (isAtRoot(node, ["ClassName"])) {
+            return typeSpecBody(node, context);
+        }
+        const parent = node.parent;
         switch (parent?.name) {
             case "Field":
                 return fieldAttrBody(node);
@@ -324,14 +397,39 @@ export function autocomplete(context: CompletionContext) {
                 return propAttrBody(node);
             case "Method":
                 return methodAttrBody(node);
+            case "MethodName":
+                switch (parent.prevSibling?.name) {
+                    case "Type":
+                        return {
+                            from: node.from,
+                            options: [{
+                                label: "marshal",
+                                type: "keyword"
+                            }]
+                        };
+                    case "MarshalClause":
+                        return marshalClauseBody(node, context);
+                }
+            case "SignatureArgument":
+                return sigArgsBody(node, context);
+            case "MarshalBlob":
+                return marshalClauseBody(node, context);
+            case "InitOption":
+                return initOptionBody(node);
             case "Delim":
-                parent = parent.parent;
-                if (parent) {
-                    if (parent.name === "Method" || parent.name === "MethodScopeBlock") {
-                        return methodScopeBlock(node, context);
-                    }
-                    else if (parent.name === "ParameterAttribute") {
-                        return paramAttrBody(node);
+                const grand = parent.parent;
+                if (grand) {
+                    switch (grand.name) {
+                        case "Method":
+                        case "MethodScopeBlock":
+                            return methodScopeBlock(node, context);
+                        case "MethodArguments":
+                        case "LocalVariables":
+                            return sigArgsBody(node, context);
+                        case "MarshalClause":
+                            return marshalClauseBody(node, context);
+                        case "ParameterAttribute":
+                            return paramAttrBody(node);
                     }
                 }
                 break;
