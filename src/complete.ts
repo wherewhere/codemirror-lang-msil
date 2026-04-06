@@ -109,10 +109,15 @@ import {
     methodAttr,
     implAttr,
     callConv,
-    paramAttr
+    paramAttr,
+    tls,
+    secAction,
+    asmAttr,
+    exptAttr,
+    manresAttr
 } from "./keywords";
 
-function classAttrBody(node: SyntaxNode) {
+function classAttrBody(node: SyntaxNode, context: CompletionContext) {
     if (node.parent?.name === '⚠') {
         node = node.parent;
     }
@@ -121,11 +126,29 @@ function classAttrBody(node: SyntaxNode) {
         if (prevSibling.name === '⚠') {
             prevSibling = prevSibling.prevSibling;
         }
-        if (prevSibling && findPrevSibling(prevSibling, ["ClassName"])) {
-            return {
-                from: node.from,
-                options: classExtendsDecl
-            };
+        if (prevSibling) {
+            const code = context.state.sliceDoc(prevSibling.from, prevSibling.to).trimEnd();
+            switch (code) {
+                case ".class":
+                    return {
+                        from: node.from,
+                        options: classAttr.concat({
+                            label: "extern",
+                            type: "keyword"
+                        })
+                    };
+                case "nested":
+                    return {
+                        from: prevSibling.from,
+                        options: classAttr
+                    };
+            }
+            if (findPrevSibling(prevSibling, ["ClassName"])) {
+                return {
+                    from: node.from,
+                    options: classExtendsDecl
+                };
+            }
         }
     }
     return {
@@ -264,15 +287,97 @@ function sigArgsBody(node: SyntaxNode, context: CompletionContext) {
     }
 }
 
+function dataAttrBody({ from }: Pick<SyntaxNode, "from">) {
+    return {
+        from,
+        options: tls
+    };
+}
+
+function securityAttrBody({ from }: Pick<SyntaxNode, "from">) {
+    return {
+        from,
+        options: secAction
+    };
+}
+
+function assemblyAttrBody(node: SyntaxNode, context: CompletionContext) {
+    const prevSibling = node.prevSibling;
+    if (prevSibling) {
+        const code = context.state.sliceDoc(prevSibling.from, prevSibling.to);
+        if (code === ".assembly") {
+            return {
+                from: node.from,
+                options: asmAttr.concat({
+                    label: "extern",
+                    type: "keyword"
+                })
+            };
+        }
+    }
+    return {
+        from: node.from,
+        options: asmAttr
+    };
+}
+
+function assemblyRefAttrBody({ from }: Pick<SyntaxNode, "from">) {
+    return {
+        from,
+        options: asmAttr
+    };
+}
+
+function exptAttrBody({ from }: Pick<SyntaxNode, "from">) {
+    return {
+        from,
+        options: exptAttr
+    };
+}
+
+function manifestResAttrBody({ from }: Pick<SyntaxNode, "from">) {
+    return {
+        from,
+        options: manresAttr
+    };
+}
+
+import { sehClause } from "./keywords";
 import { opcodes } from "./instructions";
 
 function methodScopeBlock(node: SyntaxNode, context: CompletionContext) {
+    const prevSibling = node.prevSibling;
+    switch (prevSibling?.name) {
+        case "SEHBlock":
+            const name = prevSibling.lastChild?.prevSibling?.name;
+            if (name === "TryBlock" || name === "SEHClause") {
+                return {
+                    from: node.from,
+                    options: sehClause
+                };
+            }
+            break;
+        case "⚠":
+            const prev = prevSibling.prevSibling;
+            if (prev?.name === "Keyword") {
+                const code = context.state.sliceDoc(prev.from, prev.to);
+                if (code === ".locals") {
+                    return {
+                        from: node.from,
+                        options: [{
+                            label: "init",
+                            type: "keyword"
+                        }]
+                    };
+                }
+            }
+            break;
+    }
     function getCode() {
         if (node.parent?.name === "OpCode") {
             return context.state.sliceDoc(node.parent.from, node.parent.to).trimEnd();
         }
-        else if (node.prevSibling?.name === "Instrction") {
-            const prevSibling = node.prevSibling;
+        else if (prevSibling?.name === "Instrction") {
             if (prevSibling.firstChild?.name === "OpCode") {
                 const firstChild = prevSibling.firstChild;
                 if (firstChild.nextSibling?.name === '⚠') {
@@ -327,9 +432,14 @@ function methodScopeBlock(node: SyntaxNode, context: CompletionContext) {
 }
 
 function typeSpecBody(node: SyntaxNode, context: CompletionContext) {
-    const name = node.parent?.parent?.name;
-    if (name === "TypeSpec" || name === "Type") {
-        return typeBody(node, context);
+    const parent = node.parent?.parent;
+    switch (parent?.name) {
+        case "TypeSpec":
+            if (parent?.parent?.name === "Security" && parent.prevSibling?.name === '⚠') {
+                return securityAttrBody(node);
+            }
+        case "Type":
+            return typeBody(node, context);
     }
 }
 
@@ -382,13 +492,21 @@ export function autocomplete(context: CompletionContext) {
     }
     else if (code.match(/^\w/)) {
         if (isAtRoot(node, ["Class"])) {
-            return classAttrBody(node);
+            return classAttrBody(node, context);
         }
         else if (isAtRoot(node, ["ClassName"])) {
             return typeSpecBody(node, context);
         }
         const parent = node.parent;
         switch (parent?.name) {
+            case "Module":
+                return {
+                    from: node.from,
+                    options: [{
+                        label: "extern",
+                        type: "keyword"
+                    }]
+                };
             case "Field":
                 return fieldAttrBody(node);
             case "Event":
@@ -397,6 +515,26 @@ export function autocomplete(context: CompletionContext) {
                 return propAttrBody(node);
             case "Method":
                 return methodAttrBody(node);
+            case "Data":
+                return dataAttrBody(node);
+            case "Security":
+                return securityAttrBody(node);
+            case "File":
+                return {
+                    from: node.from,
+                    options: [{
+                        label: "nometadata",
+                        type: "keyword"
+                    }]
+                };
+            case "Assembly":
+                return assemblyAttrBody(node, context);
+            case "AssemblyReference":
+                return assemblyRefAttrBody(node);
+            case "Export":
+                return exptAttrBody(node);
+            case "ManifestResource":
+                return manifestResAttrBody(node);
             case "MethodName":
                 switch (parent.prevSibling?.name) {
                     case "Type":
@@ -410,12 +548,13 @@ export function autocomplete(context: CompletionContext) {
                     case "MarshalClause":
                         return marshalClauseBody(node, context);
                 }
+                break;
+            case "InitOption":
+                return initOptionBody(node);
             case "SignatureArgument":
                 return sigArgsBody(node, context);
             case "MarshalBlob":
                 return marshalClauseBody(node, context);
-            case "InitOption":
-                return initOptionBody(node);
             case "Delim":
                 const grand = parent.parent;
                 if (grand) {

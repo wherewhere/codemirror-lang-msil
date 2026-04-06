@@ -737,17 +737,17 @@ scopeBlock[@name=MethodScopeBlock] {
 }
 
 /* Structured exception handling directives */
-sehBlock {
+sehBlock[@name=SEHBlock] {
 	tryBlock sehClause+
 }
 
-tryBlock {
+tryBlock[@name=TryBlock] {
 	dkw<'.try'> scopeBlock
 	| dkw<'.try'> id kw<'to'> id
 	| dkw<'.try'> int32 kw<'to'> int32
 }
 
-sehClause {
+sehClause[@name=SEHClause] {
 	catchClause handlerBlock
 	| kw<'filter'> handlerBlock
 	| kw<'finally'> handlerBlock
@@ -1534,7 +1534,7 @@ assemblyRefMemberDecl {
 }
 
 exptypeDecl[@name=ExportType] {
-	dkw<'.class'> dkw<'extern'> exptAttr* dottedName exptypeBody
+	dkw<'.class'> kw<'extern'> exptAttr* dottedName exptypeBody
 }
 
 exportDecl[@name=Export] {

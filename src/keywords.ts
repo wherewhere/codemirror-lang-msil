@@ -598,6 +598,104 @@ export const methodMemberDecl = [{
     type: "keyword"
 }];
 
+export const sehClause = [{
+    label: "catch",
+    type: "keyword"
+}, {
+    label: "filter",
+    type: "keyword"
+}, {
+    label: "finally",
+    type: "keyword"
+}, {
+    label: "fault",
+    type: "keyword"
+}];
+
+export const tls = [{
+    label: "tls",
+    type: "keyword"
+}, {
+    label: "cil",
+    type: "keyword"
+}];
+
+export const secAction = [{
+    label: "request",
+    type: "keyword"
+}, {
+    label: "demand",
+    type: "keyword"
+}, {
+    label: "assert",
+    type: "keyword"
+}, {
+    label: "deny",
+    type: "keyword"
+}, {
+    label: "permitonly",
+    type: "keyword"
+}, {
+    label: "linkcheck",
+    type: "keyword"
+}, {
+    label: "inheritcheck",
+    type: "keyword"
+}, {
+    label: "reqmin",
+    type: "keyword"
+}, {
+    label: "reqopt",
+    type: "keyword"
+}, {
+    label: "reqrefuse",
+    type: "keyword"
+}, {
+    label: "prejitgrant",
+    type: "keyword"
+}, {
+    label: "prejitdeny",
+    type: "keyword"
+}, {
+    label: "noncasdemand",
+    type: "keyword"
+}, {
+    label: "noncaslinkdemand",
+    type: "keyword"
+}, {
+    label: "noncasinheritance",
+    type: "keyword"
+}];
+
+export const asmAttr = [{
+    label: "retargetable",
+    type: "keyword"
+}, {
+    label: "windowsruntime",
+    type: "keyword"
+}, {
+    label: "noplatform",
+    type: "keyword"
+}, {
+    label: "legacy library",
+    type: "keyword"
+}, {
+    label: "cil",
+    type: "keyword"
+}, {
+    label: "x86",
+    type: "keyword"
+}, {
+    label: "amd64",
+    type: "keyword"
+}, {
+    label: "arm",
+    type: "keyword"
+}, {
+    label: "arm64",
+    type: "keyword"
+}];
+
 export const assemblyMemberDecl = [{
     label: ".hash",
     type: "keyword"
@@ -641,6 +739,35 @@ export const assemblyRefMemberDecl = [{
     type: "keyword"
 }];
 
+export const exptAttr = [{
+    label: "private",
+    type: "keyword"
+}, {
+    label: "public",
+    type: "keyword"
+}, {
+    label: "forwarder",
+    type: "keyword"
+}, {
+    label: "nested public",
+    type: "keyword"
+}, {
+    label: "nested private",
+    type: "keyword"
+}, {
+    label: "nested family",
+    type: "keyword"
+}, {
+    label: "nested assembly",
+    type: "keyword"
+}, {
+    label: "nested famandassem",
+    type: "keyword"
+}, {
+    label: "nested famorassem",
+    type: "keyword"
+}];
+
 export const exptypeMemberDecl = [{
     label: ".file",
     type: "keyword"
@@ -657,6 +784,14 @@ export const exptypeMemberDecl = [{
     label: ".custom",
     type: "keyword"
 }, ...compControl];
+
+export const manresAttr = [{
+    label: "public",
+    type: "keyword"
+}, {
+    label: "private",
+    type: "keyword"
+}];
 
 export const manifestResMemberDecl = [{
     label: ".file",
