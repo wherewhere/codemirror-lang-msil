@@ -490,6 +490,29 @@ export const callConv = [{
     type: "keyword"
 }];
 
+export const typarAttrib = [{
+    label: '+',
+    type: "keyword"
+}, {
+    label: '-',
+    type: "keyword"
+}, {
+    label: "class",
+    type: "keyword"
+}, {
+    label: "valuetype",
+    type: "keyword"
+}, {
+    label: "byreflike",
+    type: "keyword"
+}, {
+    label: ".ctor",
+    type: "keyword"
+}, {
+    label: "flags",
+    type: "keyword"
+}];
+
 export const paramAttr = [{
     label: "in",
     type: "keyword"

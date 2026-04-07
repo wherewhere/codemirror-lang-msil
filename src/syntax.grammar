@@ -509,8 +509,8 @@ fieldAttr[@name=FieldAttribute] {
 	| kw<'rtspecialname'>
 	| kw<'specialname'>
 	/* <STRIP>commented out because PInvoke for fields is not supported by EE
-	| kw<'pinvokeimpl'> parens<compQstring 'as' compQstring pinvAttr>
-	| kw<'pinvokeimpl'> parens<compQstring  pinvAttr>
+	| kw<'pinvokeimpl'> parens<compQstring kw<'as'> compQstring pinvAttr>
+	| kw<'pinvokeimpl'> parens<compQstring pinvAttr>
 	| kw<'pinvokeimpl'> parens<pinvAttr>
 	</STRIP> */
 	| kw<'marshal'> parens<marshalBlob>

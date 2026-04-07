@@ -30,7 +30,7 @@ export const msilLanguage = LRLanguage.define({
         LineComment: tags.lineComment,
         BlockComment: tags.blockComment,
 
-        "Astrisk + - Not & | =": tags.operator,
+        "Astrisk + - Not & | < > =": tags.operator,
         ". : Slash ::": tags.separator,
 
         PP_Directive: tags.definitionKeyword,
@@ -51,8 +51,7 @@ export const msilLanguage = LRLanguage.define({
 
         "( )": tags.paren,
         "{ }": tags.brace,
-        "[ ]": tags.squareBracket,
-        "< >": tags.angleBracket,
+        "[ ]": tags.squareBracket
       })
     ]
   }),

@@ -1,6 +1,6 @@
 {
   "name": "codemirror-lang-msil",
-  "version": "0.0.1-beta.2",
+  "version": "0.0.1-beta.3",
   "description": "A IL mode for CodeMirror 6",
   "type": "module",
   "main": "dist/index.cjs",
@@ -17,10 +17,23 @@
     "build": "cm-buildhelper src/index.ts",
     "build-vite": "npm run build && vite build ./dev",
     "test": "cm-runtests",
-    "publish": "npm run build && npm publish"
+    "publish": "npm run build && npm publish --tag=beta"
+  },
+  "keywords": [
+    "msil",
+    "codemirror",
+    "codemirror-mode",
+    "codemirror6"
+  ],
+  "homepage": "https://github.com/wherewhere/codemirror-lang-msil",
+  "bugs": {
+    "url": "https://github.com/wherewhere/codemirror-lang-msil/issues"
   },
   "license": "MIT",
   "author": "wherewhere7",
+  "contributors": [
+    "wherewhere"
+  ],
   "sideEffects": false,
   "funding": [
     {

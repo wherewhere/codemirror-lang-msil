@@ -1,4 +1,4 @@
-import type { Completion, CompletionContext } from "@codemirror/autocomplete";
+import type { CompletionContext } from "@codemirror/autocomplete";
 import type { SyntaxNode } from "@lezer/common";
 import {
     memberDecl,
@@ -109,6 +109,7 @@ import {
     methodAttr,
     implAttr,
     callConv,
+    typarAttrib,
     paramAttr,
     tls,
     secAction,
@@ -155,6 +156,37 @@ function classAttrBody(node: SyntaxNode, context: CompletionContext) {
         from: node.from,
         options: classAttr
     };
+}
+
+function classBodyAttrBody(node: SyntaxNode, context: CompletionContext) {
+    let prevSibling = node.prevSibling;
+    if (prevSibling?.name === '⚠') {
+        prevSibling = prevSibling.prevSibling;
+    }
+    if (prevSibling?.name === "Keyword") {
+        const code = context.state.sliceDoc(prevSibling.from, prevSibling.to);
+        switch (code) {
+            case ".param":
+                return {
+                    from: node.from,
+                    options: [{
+                        label: "type",
+                        type: "keyword"
+                    }, {
+                        label: "constraint",
+                        type: "keyword"
+                    }]
+                };
+            case ".interfaceimpl":
+                return {
+                    from: node.from,
+                    options: [{
+                        label: "type",
+                        type: "keyword"
+                    }]
+                };
+        }
+    }
 }
 
 import {
@@ -267,6 +299,13 @@ function marshalClauseBody(node: SyntaxNode, context: CompletionContext) {
     };
 }
 
+function typeParamBody(node: SyntaxNode, context: CompletionContext) {
+    return {
+        from: node.from,
+        options: typarAttrib
+    }
+}
+
 function sigArgsBody(node: SyntaxNode, context: CompletionContext) {
     switch (node.prevSibling?.name) {
         case "Type":
@@ -328,6 +367,22 @@ function assemblyRefAttrBody({ from }: Pick<SyntaxNode, "from">) {
     };
 }
 
+function assemblyBodyAttrBody(node: SyntaxNode, context: CompletionContext) {
+    const prevSibling = node.prevSibling;
+    if (prevSibling) {
+        const code = context.state.sliceDoc(prevSibling.from, prevSibling.to);
+        if (code === ".hash") {
+            return {
+                from: node.from,
+                options: [{
+                    label: "algorithm",
+                    type: "keyword"
+                }]
+            };
+        }
+    }
+}
+
 function exptAttrBody({ from }: Pick<SyntaxNode, "from">) {
     return {
         from,
@@ -357,18 +412,30 @@ function methodScopeBlock(node: SyntaxNode, context: CompletionContext) {
                 };
             }
             break;
-        case "⚠":
+        case '⚠':
             const prev = prevSibling.prevSibling;
             if (prev?.name === "Keyword") {
                 const code = context.state.sliceDoc(prev.from, prev.to);
-                if (code === ".locals") {
-                    return {
-                        from: node.from,
-                        options: [{
-                            label: "init",
-                            type: "keyword"
-                        }]
-                    };
+                switch (code) {
+                    case ".locals":
+                        return {
+                            from: node.from,
+                            options: [{
+                                label: "init",
+                                type: "keyword"
+                            }]
+                        };
+                    case ".param":
+                        return {
+                            from: node.from,
+                            options: [{
+                                label: "type",
+                                type: "keyword"
+                            }, {
+                                label: "constraint",
+                                type: "keyword"
+                            }]
+                        };
                 }
             }
             break;
@@ -435,8 +502,22 @@ function typeSpecBody(node: SyntaxNode, context: CompletionContext) {
     const parent = node.parent?.parent;
     switch (parent?.name) {
         case "TypeSpec":
-            if (parent?.parent?.name === "Security" && parent.prevSibling?.name === '⚠') {
-                return securityAttrBody(node);
+            const prevSibling = parent.prevSibling;
+            switch (prevSibling?.name) {
+                case "Keyword":
+                    const code = context.state.sliceDoc(prevSibling.from, prevSibling.to);
+                    if (code === ".override") {
+                        const result = typeBody(node, context);
+                        result.options.push({
+                            label: "method",
+                            type: "keyword"
+                        });
+                        return result;
+                    }
+                case '⚠':
+                    if (parent.parent?.name === "Security") {
+                        return securityAttrBody(node);
+                    }
             }
         case "Type":
             return typeBody(node, context);
@@ -489,9 +570,13 @@ export function autocomplete(context: CompletionContext) {
         else if (isAtRoot(node, ["CompilationUnit"])) {
             return memberBody(node.from);
         }
+        else if (isAtRoot(node, ["ArgumentName"])) {
+            return typeParamBody(node, context);
+        }
     }
     else if (code.match(/^\w/)) {
         if (isAtRoot(node, ["Class"])) {
+            console.log(node);
             return classAttrBody(node, context);
         }
         else if (isAtRoot(node, ["ClassName"])) {
@@ -524,6 +609,9 @@ export function autocomplete(context: CompletionContext) {
                     from: node.from,
                     options: [{
                         label: "nometadata",
+                        type: "keyword"
+                    }, {
+                        label: "alignment",
                         type: "keyword"
                     }]
                 };
@@ -559,6 +647,8 @@ export function autocomplete(context: CompletionContext) {
                 const grand = parent.parent;
                 if (grand) {
                     switch (grand.name) {
+                        case "Class":
+                            return classBodyAttrBody(node, context);
                         case "Method":
                         case "MethodScopeBlock":
                             return methodScopeBlock(node, context);
@@ -567,8 +657,12 @@ export function autocomplete(context: CompletionContext) {
                             return sigArgsBody(node, context);
                         case "MarshalClause":
                             return marshalClauseBody(node, context);
+                        case "TypeParametersClause":
+                            return typeParamBody(node, context);
                         case "ParameterAttribute":
                             return paramAttrBody(node);
+                        case "Assembly":
+                            return assemblyBodyAttrBody(node, context);
                     }
                 }
                 break;
