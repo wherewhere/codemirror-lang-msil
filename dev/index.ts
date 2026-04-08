@@ -7,7 +7,7 @@ import { msil, parser, msilTooltip } from '../dist/';
 import { printTree } from './print-lezer-tree';
 import { oneDark } from '@codemirror/theme-one-dark';
 
-const doc =`.assembly _
+const doc = `.assembly _
 {
     .custom instance void [System.Private.CoreLib]System.Runtime.CompilerServices.CompilationRelaxationsAttribute::.ctor(int32) = (
         01 00 08 00 00 00 00 00
@@ -74,24 +74,24 @@ syntax.className = 'ͼo';
 document.getElementById('syntax')!.appendChild(syntax);
 
 new EditorView({
-    state: EditorState.create({
-        doc,
-        extensions: [
-            basicSetup,
-            msil(),
-            oneDark,
-            keymap.of([indentWithTab]),
-            indentUnit.of('    '),
-            EditorView.updateListener.of(e => {
-                if (e.docChanged) {
-                    const doc = e.state.doc.toString();
-                    syntax.textContent = printTree(parser.parse(doc), doc);
-                }
-            }),
-            msilTooltip()
-        ],
-    }),
-    parent: document.querySelector('#editor')!,
+  state: EditorState.create({
+    doc,
+    extensions: [
+      basicSetup,
+      msil(),
+      oneDark,
+      keymap.of([indentWithTab]),
+      indentUnit.of('    '),
+      EditorView.updateListener.of(e => {
+        if (e.docChanged) {
+          const doc = e.state.doc.toString();
+          syntax.textContent = printTree(parser.parse(doc), doc);
+        }
+      }),
+      msilTooltip()
+    ],
+  }),
+  parent: document.querySelector('#editor')!,
 });
 
 syntax.textContent = printTree(parser.parse(doc), doc);

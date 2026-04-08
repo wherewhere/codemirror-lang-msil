@@ -236,6 +236,7 @@ function initOptionBody({ from }: Pick<SyntaxNode, "from">) {
 function methodAttrBody(node: SyntaxNode) {
     switch (node.prevSibling?.name) {
         case "Keyword":
+        case "MethodAttribute":
             return {
                 from: node.from,
                 options: methodAttr.concat(callConv, typeOptions)
@@ -360,9 +361,25 @@ function assemblyAttrBody(node: SyntaxNode, context: CompletionContext) {
     };
 }
 
-function assemblyRefAttrBody({ from }: Pick<SyntaxNode, "from">) {
+function assemblyRefAttrBody(node: SyntaxNode, context: CompletionContext) {
+    const prevSibling = node.prevSibling;
+    switch (prevSibling?.name) {
+        case "AssemblyName":
+            return {
+                from: node.from,
+                options: [{
+                    label: "as",
+                    type: "keyword"
+                }]
+            };
+        case "Keyword":
+            const code = context.state.sliceDoc(prevSibling.from, prevSibling.to);
+            if (code === "as") {
+                return;
+            }
+    }
     return {
-        from,
+        from: node.from,
         options: asmAttr
     };
 }
@@ -390,9 +407,18 @@ function exptAttrBody({ from }: Pick<SyntaxNode, "from">) {
     };
 }
 
-function manifestResAttrBody({ from }: Pick<SyntaxNode, "from">) {
+function manifestResAttrBody(node: SyntaxNode) {
+    if (node.prevSibling?.name === "IdentifierName") {
+        return {
+            from: node.from,
+            options: [{
+                label: "as",
+                type: "keyword"
+            }]
+        };
+    }
     return {
-        from,
+        from: node.from,
         options: manresAttr
     };
 }
@@ -410,6 +436,21 @@ function methodScopeBlock(node: SyntaxNode, context: CompletionContext) {
                     from: node.from,
                     options: sehClause
                 };
+            }
+            break;
+        case "Delim":
+            if (prevSibling.prevSibling) {
+                const prev = prevSibling.prevSibling;
+                const code = context.state.sliceDoc(prev.from, prev.to);
+                if (code === ".export") {
+                    return {
+                        from: node.from,
+                        options: [{
+                            label: "as",
+                            type: "keyword"
+                        }]
+                    };
+                }
             }
             break;
         case '⚠':
@@ -570,6 +611,15 @@ export function autocomplete(context: CompletionContext) {
         else if (isAtRoot(node, ["CompilationUnit"])) {
             return memberBody(node.from);
         }
+        else if (isAtRoot(node, ["TypeDefine"])) {
+            return {
+                from: node.from,
+                options: [{
+                    label: ".custom",
+                    type: "keyword"
+                }]
+            }
+        }
         else if (isAtRoot(node, ["ArgumentName"])) {
             return typeParamBody(node, context);
         }
@@ -618,7 +668,7 @@ export function autocomplete(context: CompletionContext) {
             case "Assembly":
                 return assemblyAttrBody(node, context);
             case "AssemblyReference":
-                return assemblyRefAttrBody(node);
+                return assemblyRefAttrBody(node, context);
             case "Export":
                 return exptAttrBody(node);
             case "ManifestResource":
