@@ -1,6 +1,6 @@
 import { hoverTooltip, type TooltipView } from "@codemirror/view";
 import { syntaxTree } from "@codemirror/language";
-import instructions from "./instructions";
+import instructions from "./complete/keywords/instructions";
 
 type tokenType = "keyword";
 type titleInfo = { title: string, type: tokenType };

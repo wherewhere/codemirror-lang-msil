@@ -1,0 +1,349 @@
+
+export const type = [{
+    label: "class",
+    type: "keyword"
+}, {
+    label: "valuetype",
+    type: "keyword"
+}, {
+    label: "object",
+    type: "keyword"
+}, {
+    label: "pinned",
+    type: "keyword"
+}, {
+    label: "typedref",
+    type: "keyword"
+}, {
+    label: "void",
+    type: "keyword"
+}, {
+    label: "value class",
+    type: "keyword"
+}, {
+    label: "native unsigned int",
+    type: "keyword"
+}, {
+    label: "native uint",
+    type: "keyword"
+}];
+
+export const simpleType = [{
+    label: "char",
+    type: "keyword"
+}, {
+    label: "string",
+    type: "keyword"
+}, {
+    label: "bool",
+    type: "keyword"
+}, {
+    label: "int8",
+    type: "keyword"
+}, {
+    label: "int16",
+    type: "keyword"
+}, {
+    label: "int32",
+    type: "keyword"
+}, {
+    label: "int64",
+    type: "keyword"
+}, {
+    label: "float32",
+    type: "keyword"
+}, {
+    label: "float64",
+    type: "keyword"
+}, {
+    label: "unsigned",
+    type: "keyword"
+}, {
+    label: "uint8",
+    type: "keyword"
+}, {
+    label: "uint16",
+    type: "keyword"
+}, {
+    label: "uint32",
+    type: "keyword"
+}, {
+    label: "uint64",
+    type: "keyword"
+}];
+
+export const typeOptions = type.concat(simpleType);
+
+export const nativeType = [{
+    label: "custom",
+    type: "keyword"
+}, {
+    label: "fixed sysstring",
+    type: "keyword"
+}, {
+    label: "fixed array",
+    type: "keyword"
+}, {
+    label: "variant",
+    type: "keyword"
+}, {
+    label: "currency",
+    type: "keyword"
+}, {
+    label: "syschar",
+    type: "keyword"
+}, {
+    label: "void",
+    type: "keyword"
+}, {
+    label: "bool",
+    type: "keyword"
+}, {
+    label: "int8",
+    type: "keyword"
+}, {
+    label: "int16",
+    type: "keyword"
+}, {
+    label: "int32",
+    type: "keyword"
+}, {
+    label: "int64",
+    type: "keyword"
+}, {
+    label: "float32",
+    type: "keyword"
+}, {
+    label: "float64",
+    type: "keyword"
+}, {
+    label: "error",
+    type: "keyword"
+}, {
+    label: "unsigned int",
+    type: "keyword"
+}, {
+    label: "unsigned int8",
+    type: "keyword"
+}, {
+    label: "unsigned int16",
+    type: "keyword"
+}, {
+    label: "unsigned int32",
+    type: "keyword"
+}, {
+    label: "unsigned int64",
+    type: "keyword"
+}, {
+    label: "uint8",
+    type: "keyword"
+}, {
+    label: "uint16",
+    type: "keyword"
+}, {
+    label: "uint32",
+    type: "keyword"
+}, {
+    label: "uint64",
+    type: "keyword"
+}, {
+    label: "decimal",
+    type: "keyword"
+}, {
+    label: "date",
+    type: "keyword"
+}, {
+    label: "bstr",
+    type: "keyword"
+}, {
+    label: "lpstr",
+    type: "keyword"
+}, {
+    label: "lpwstr",
+    type: "keyword"
+}, {
+    label: "lptstr",
+    type: "keyword"
+}, {
+    label: "objectref",
+    type: "keyword"
+}, {
+    label: "iunknown",
+    type: "keyword"
+}, {
+    label: "idispatch",
+    type: "keyword"
+}, {
+    label: "interface",
+    type: "keyword"
+}, {
+    label: "struct",
+    type: "keyword"
+}, {
+    label: "safearray",
+    type: "keyword"
+}, {
+    label: "int",
+    type: "keyword"
+}, {
+    label: "uint",
+    type: "keyword"
+}, {
+    label: "nested struct",
+    type: "keyword"
+}, {
+    label: "byvalstr",
+    type: "keyword"
+}, {
+    label: "ansi bstr",
+    type: "keyword"
+}, {
+    label: "tbstr",
+    type: "keyword"
+}, {
+    label: "variant bool",
+    type: "keyword"
+}, {
+    label: "method",
+    type: "keyword"
+}, {
+    label: "as any",
+    type: "keyword"
+}, {
+    label: "lpstruct",
+    type: "keyword"
+}];
+
+export const variantType = [{
+    label: "null",
+    type: "keyword"
+}, {
+    label: "variant",
+    type: "keyword"
+}, {
+    label: "currency",
+    type: "keyword"
+}, {
+    label: "void",
+    type: "keyword"
+}, {
+    label: "bool",
+    type: "keyword"
+}, {
+    label: "int8",
+    type: "keyword"
+}, {
+    label: "int16",
+    type: "keyword"
+}, {
+    label: "int32",
+    type: "keyword"
+}, {
+    label: "int64",
+    type: "keyword"
+}, {
+    label: "float32",
+    type: "keyword"
+}, {
+    label: "float64",
+    type: "keyword"
+}, {
+    label: "unsigned int8",
+    type: "keyword"
+}, {
+    label: "unsigned int16",
+    type: "keyword"
+}, {
+    label: "unsigned int32",
+    type: "keyword"
+}, {
+    label: "unsigned int64",
+    type: "keyword"
+}, {
+    label: "uint8",
+    type: "keyword"
+}, {
+    label: "uint16",
+    type: "keyword"
+}, {
+    label: "uint32",
+    type: "keyword"
+}, {
+    label: "uint64",
+    type: "keyword"
+}, {
+    label: "decimal",
+    type: "keyword"
+}, {
+    label: "date",
+    type: "keyword"
+}, {
+    label: "bstr",
+    type: "keyword"
+}, {
+    label: "lpstr",
+    type: "keyword"
+}, {
+    label: "lpwstr",
+    type: "keyword"
+}, {
+    label: "iunknown",
+    type: "keyword"
+}, {
+    label: "idispatch",
+    type: "keyword"
+}, {
+    label: "safearray",
+    type: "keyword"
+}, {
+    label: "int",
+    type: "keyword"
+}, {
+    label: "unsigned int",
+    type: "keyword"
+}, {
+    label: "uint",
+    type: "keyword"
+}, {
+    label: "error",
+    type: "keyword"
+}, {
+    label: "hresult",
+    type: "keyword"
+}, {
+    label: "carray",
+    type: "keyword"
+}, {
+    label: "userdefined",
+    type: "keyword"
+}, {
+    label: "record",
+    type: "keyword"
+}, {
+    label: "filetime",
+    type: "keyword"
+}, {
+    label: "blob",
+    type: "keyword"
+}, {
+    label: "stream",
+    type: "keyword"
+}, {
+    label: "storage",
+    type: "keyword"
+}, {
+    label: "streamed_object",
+    type: "keyword"
+}, {
+    label: "stored_object",
+    type: "keyword"
+}, {
+    label: "blob_object",
+    type: "keyword"
+}, {
+    label: "cf",
+    type: "keyword"
+}, {
+    label: "clsid",
+    type: "keyword"
+}];
