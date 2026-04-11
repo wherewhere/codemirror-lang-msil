@@ -85,7 +85,7 @@ export function methodScopeBlock(node: SyntaxNode, context: CompletionContext) {
         return;
     }
     const parts = code.split('.');
-    type opcode = Omit<Record<string, object | undefined>, "desc"> & { desc?: string };
+    type opcode = Record<string, object | undefined> & { info?: string, type?: string };
     let opcode = opcodes as opcode;
     for (let i = 0; i < parts.length; i++) {
         const part = parts[i];
@@ -96,16 +96,16 @@ export function methodScopeBlock(node: SyntaxNode, context: CompletionContext) {
             return;
         }
     }
-    const result: { label: string; type: string; info?: string }[] = [];
+    const result: { label: string, info?: string, type: string }[] = [];
     for (const key in opcode) {
-        if (key === "desc") {
+        if (key === "info" || key === "type") {
             continue;
         }
-        const { desc } = opcode[key] as { desc?: string };
+        const { info, type } = opcode[key] as { info?: string, type?: string };
         result.push({
             label: key,
-            type: key.match(/^[mM]?[0-8]$/) ? "constant" : "keyword",
-            info: desc
+            info: info,
+            type: type || "keyword"
         });
     }
     if (result.length) {

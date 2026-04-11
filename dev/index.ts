@@ -3,7 +3,7 @@ import { EditorView, keymap } from '@codemirror/view';
 import { basicSetup } from 'codemirror';
 import { indentUnit } from '@codemirror/language';
 import { indentWithTab } from '@codemirror/commands';
-import { msil, parser, msilTooltip } from '../dist/';
+import { msil, parser } from '../dist/';
 import { printTree } from './print-lezer-tree';
 import { oneDark } from '@codemirror/theme-one-dark';
 
@@ -87,8 +87,7 @@ new EditorView({
           const doc = e.state.doc.toString();
           syntax.textContent = printTree(parser.parse(doc), doc);
         }
-      }),
-      msilTooltip()
+      })
     ],
   }),
   parent: document.querySelector('#editor')!,

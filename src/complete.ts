@@ -7,7 +7,7 @@ import { classAttrBody, fieldAttrBody, eventAttrBody, propAttrBody, methodAttrBo
 import { typeParamBody, marshalClauseBody, initOptionBody, sigArgsBody } from "./complete/others";
 import { typeSpecBody } from "./complete/type";
 
-export function autocomplete(context: CompletionContext) {
+export function msilCompletion(context: CompletionContext) {
     const node = syntaxTree(context.state).resolveInner(context.pos, -1);
     if (node.parent?.name === "OpCode" || node.prevSibling?.name === "Instrction") {
         const result = methodScopeBlock(node, context);

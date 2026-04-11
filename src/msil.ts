@@ -8,7 +8,6 @@ import {
   continuedIndent,
 } from "@codemirror/language";
 import { styleTags, tags } from "@lezer/highlight";
-import { autocomplete } from "./complete";
 
 export const msilLanguage = LRLanguage.define({
   parser: parser.configure({
@@ -58,11 +57,16 @@ export const msilLanguage = LRLanguage.define({
   languageData: {
     commentTokens: { line: "//", block: { open: "/*", close: "*/" } },
     closeBrackets: { brackets: ['(', '[', '{', '"', '\'', '<'] },
-    indentOnInput: /^\s*((\)|\]|\})$|(catch|finally)\b)/,
-    autocomplete: autocomplete
+    indentOnInput: /^\s*((\)|\]|\})$|(catch|finally)\b)/
   }
 });
 
+import { msilCompletion } from "./complete";
+import { msilTooltip } from "./tooltip";
+
 export function msil() {
-  return new LanguageSupport(msilLanguage);
+  return [
+    new LanguageSupport(msilLanguage, msilLanguage.data.of({ autocomplete: msilCompletion })),
+    msilTooltip()
+  ];
 }

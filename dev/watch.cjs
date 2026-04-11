@@ -1,14 +1,80 @@
-const { watch } = require("@marijn/buildtool")
-const { resolve } = require("path")
-const { options } = require("@codemirror/buildhelper/src/options")
+const { watch } = require("fs");
+const { readdir, stat } = require("fs/promises");
+const { dirname, resolve } = require("path");
+const { build } = require("@marijn/buildtool");
+const { options } = require("@codemirror/buildhelper/src/options");
 
-let args = process.argv.slice(2)
-
-console.log(args)
+const args = process.argv.slice(2);
 
 if (args.length != 1) {
-  console.log("Usage: cm-buildhelper src/mainfile.ts")
-  process.exit(1)
+  console.log("Usage: cm-buildhelper src/mainfile.ts");
+  process.exit(1);
 }
 
-watch([resolve(args[0])], [], options)
+/**
+ * @param {string} dir
+ */
+async function collectTsFilesAsync(dir) {
+  const entries = await readdir(dir);
+  /** @type {string[]} */
+  let files = []
+  for (const entry of entries) {
+    const full = resolve(dir, entry);
+    const file = await stat(full);
+    if (file.isDirectory()) {
+      files = files.concat(await collectTsFilesAsync(full));
+    }
+    else if (entry.endsWith(".ts") && !entry.endsWith(".d.ts")) {
+      files.push(full);
+    }
+  }
+  return files;
+}
+
+const main = resolve(args[0]);
+const srcDir = resolve(dirname(main));
+
+let building = false, queued = false;
+/** @type {NodeJS.Timeout | null} */;
+let timer = null;
+
+async function runBuild() {
+  if (building) {
+    queued = true;
+    return;
+  }
+
+  console.log(`Rebuilding ${main}`);
+  building = true;
+  try {
+    await build(main, options);
+    console.log("Rebuilding done.");
+  }
+  catch (e) {
+    console.log("Rebuilding failed.");
+    console.error(e);
+  }
+  finally {
+    building = false;
+    if (queued) {
+      queued = false;
+      runBuild();
+    }
+  }
+}
+
+function scheduleBuild() {
+  if (timer) { clearTimeout(timer); }
+  timer = setTimeout(runBuild, 120);
+}
+
+collectTsFilesAsync(srcDir).then(files => {
+  const watchDirs = new Set(files.map(file => dirname(file)));
+
+  for (const dir of watchDirs) {
+    watch(dir, (_event, filename) => {
+      if (!filename || !filename.endsWith(".ts")) { return; }
+      scheduleBuild();
+    });
+  }
+});
