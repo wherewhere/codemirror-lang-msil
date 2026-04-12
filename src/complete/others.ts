@@ -3,12 +3,10 @@ import type { SyntaxNode } from "@lezer/common";
 import { typarAttrib, paramAttr } from "./keywords/attribute";
 import { fieldInit } from "./keywords/others";
 import { variantType, nativeType, typeOptions } from "./keywords/type";
+import { getCompletion } from "./helpers";
 
 export function initOptionBody({ from }: Pick<SyntaxNode, "from">) {
-    return {
-        from,
-        options: fieldInit
-    };
+    return getCompletion(from, fieldInit);
 }
 
 export function marshalClauseBody(node: SyntaxNode, context: CompletionContext) {
@@ -16,10 +14,7 @@ export function marshalClauseBody(node: SyntaxNode, context: CompletionContext) 
     if (prevSibling?.name === "Keyword") {
         const code = context.state.sliceDoc(prevSibling.from, prevSibling.to);
         if (code === "safearray") {
-            return {
-                from: node.from,
-                options: variantType
-            }
+            return getCompletion(node.from, variantType);
         }
     }
     else {
@@ -31,10 +26,7 @@ export function marshalClauseBody(node: SyntaxNode, context: CompletionContext) 
                 if (keyword) {
                     const code = context.state.sliceDoc(keyword.from, keyword.to);
                     if (code === "safearray") {
-                        return {
-                            from: node.from,
-                            options: variantType
-                        }
+                        return getCompletion(node.from, variantType);
                     }
                 }
                 if (delim.lastChild?.name === ')') {
@@ -43,35 +35,23 @@ export function marshalClauseBody(node: SyntaxNode, context: CompletionContext) 
             }
         }
     }
-    return {
-        from: node.from,
-        options: nativeType
-    };
+    return getCompletion(node.from, nativeType);
 }
 
 export function typeParamBody(node: SyntaxNode, context: CompletionContext) {
-    return {
-        from: node.from,
-        options: typarAttrib
-    }
+    return getCompletion(node.from, typarAttrib);
 }
 
 export function sigArgsBody(node: SyntaxNode, context: CompletionContext) {
     switch (node.prevSibling?.name) {
         case "Type":
-            return {
-                from: node.from,
-                options: [{
-                    label: "marshal",
-                    type: "keyword"
-                }]
-            };
+            return getCompletion(node.from, [{
+                label: "marshal",
+                type: "keyword"
+            }]);
         case "MarshalClause":
             return;
         default:
-            return {
-                from: node.from,
-                options: paramAttr.concat(typeOptions)
-            };
+            return getCompletion(node.from, paramAttr.concat(typeOptions));
     }
 }

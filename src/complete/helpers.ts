@@ -23,3 +23,10 @@ export function isAtRoot(node: SyntaxNode, nodes: readonly string[]) {
     }
     return null;
 }
+
+export function getCompletion(from: number, options: { label: string, info?: string, type: string }[]) {
+    return {
+        from,
+        options
+    };
+}

@@ -14,7 +14,7 @@ if (args.length != 1) {
 /**
  * @param {string} dir
  */
-async function collectTsFilesAsync(dir) {
+async function collectWatchFilesAsync(dir) {
   const entries = await readdir(dir);
   /** @type {string[]} */
   let files = []
@@ -22,9 +22,9 @@ async function collectTsFilesAsync(dir) {
     const full = resolve(dir, entry);
     const file = await stat(full);
     if (file.isDirectory()) {
-      files = files.concat(await collectTsFilesAsync(full));
+      files = files.concat(await collectWatchFilesAsync(full));
     }
-    else if (entry.endsWith(".ts") && !entry.endsWith(".d.ts")) {
+    else if ((entry.endsWith(".ts") && !entry.endsWith(".d.ts")) || entry.endsWith(".grammar")) {
       files.push(full);
     }
   }
@@ -68,13 +68,9 @@ function scheduleBuild() {
   timer = setTimeout(runBuild, 120);
 }
 
-collectTsFilesAsync(srcDir).then(files => {
+collectWatchFilesAsync(srcDir).then(files => {
   const watchDirs = new Set(files.map(file => dirname(file)));
-
   for (const dir of watchDirs) {
-    watch(dir, (_event, filename) => {
-      if (!filename || !filename.endsWith(".ts")) { return; }
-      scheduleBuild();
-    });
+    watch(dir, scheduleBuild);
   }
 });

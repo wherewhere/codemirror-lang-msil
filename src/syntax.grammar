@@ -218,7 +218,7 @@ paramNameId[@name=ParamName] {
 }
 
 labelNameId[@name=LabelName] {
-	idBase ':'
+	idBase
 }
 
 dottedNameBase {
@@ -709,7 +709,7 @@ methodMemberDecl {
 	| dkw<'.zeroinit'>
 	| dataDecl
 	| instr
-	| labelNameId
+	| labelNameId ':'
 	| secDecl
 	| extSourceSpec
 	| languageDecl
@@ -1189,7 +1189,7 @@ instr[@name=Instrction] {
 	| instr_r int64
 	| instr_r bytesDelim
 	| instr_brtarget int32
-	| instr_brtarget id
+	| instr_brtarget labelNameId
 	| instr_method methodRef
 	| instr_field type typeSpec '::' dottedFieldName
 	| instr_field type dottedFieldName

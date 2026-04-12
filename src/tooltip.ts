@@ -1,6 +1,6 @@
 import { hoverTooltip, type TooltipView } from "@codemirror/view";
 import { syntaxTree } from "@codemirror/language";
-import instructions from "./complete/keywords/instructions.ts";
+import { getInstruction } from "./complete/keywords/instructions";
 
 type tokenType = "keyword";
 type titleInfo = { title: string, type: tokenType };
@@ -32,14 +32,15 @@ export function msilTooltip(render: hoverRender = hoverRender, options?: Paramet
                 return null;
             }
         }
-        const text = view.state.sliceDoc(node.from, node.to) as keyof typeof instructions;
-        if (text) {
-            const desc = instructions[text];
+        const code = view.state.sliceDoc(node.from, node.to);
+        const opcode = getInstruction(code);
+        if (opcode) {
+            const desc = opcode.info;
             if (desc) {
                 return {
                     pos,
                     create() {
-                        return render({ title: text, type: "keyword" }, desc);
+                        return render({ title: code, type: "keyword" }, desc);
                     }
                 };
             }

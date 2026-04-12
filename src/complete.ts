@@ -59,7 +59,6 @@ export function msilCompletion(context: CompletionContext) {
     }
     else if (code.match(/^\w/)) {
         if (isAtRoot(node, ["Class"])) {
-            console.log(node);
             return classAttrBody(node, context);
         }
         else if (isAtRoot(node, ["ClassName"])) {

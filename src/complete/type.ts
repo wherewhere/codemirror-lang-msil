@@ -29,10 +29,8 @@ export function typeSpecBody(node: SyntaxNode, context: CompletionContext) {
 }
 
 import { typeOptions } from "./keywords/type";
+import { getCompletion } from "./helpers";
 
 function typeBody(node: SyntaxNode, context: CompletionContext) {
-    return {
-        from: node.from,
-        options: typeOptions
-    }
+    return getCompletion(node.from, typeOptions);
 }
