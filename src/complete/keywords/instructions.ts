@@ -1,3 +1,5 @@
+import { type, variable } from "./store";
+
 export const opcodes = {
     add: {
         info: "Add two values, returning a new value (0x58)",
@@ -150,91 +152,91 @@ export const opcodes = {
     },
     conv: {
         i: {
-            type: "type",
+            type,
             info: "Convert to native int, pushing native int on stack (0xD3)"
         },
         i1: {
-            type: "type",
+            type,
             info: "Convert to int8, pushing int32 on stack (0x67)"
         },
         i2: {
-            type: "type",
+            type,
             info: "Convert to int16, pushing int32 on stack (0x68)"
         },
         i4: {
-            type: "type",
+            type,
             info: "Convert to int32, pushing int32 on stack (0x69)"
         },
         i8: {
-            type: "type",
+            type,
             info: "Convert to int64, pushing int64 on stack (0x6A)"
         },
         ovf: {
             i: {
-                type: "type",
+                type,
                 info: "Convert to a native int (on the stack as native int) and throw an exception on overflow (0xD4)",
                 un: {
                     info: "Convert unsigned to a native int (on the stack as native int) and throw an exception on overflow (0x8A)"
                 }
             },
             i1: {
-                type: "type",
+                type,
                 info: "Convert to an int8 (on the stack as int32) and throw an exception on overflow (0xB3)",
                 un: {
                     info: "Convert unsigned to an int8 (on the stack as int32) and throw an exception on overflow (0x82)"
                 }
             },
             i2: {
-                type: "type",
+                type,
                 info: "Convert to an int16 (on the stack as int32) and throw an exception on overflow (0xB5)",
                 un: {
                     info: "Convert unsigned to an int16 (on the stack as int32) and throw an exception on overflow (0x83)"
                 }
             },
             i4: {
-                type: "type",
+                type,
                 info: "Convert to an int32 (on the stack as int32) and throw an exception on overflow (0xB7)",
                 un: {
                     info: "Convert unsigned to an int32 (on the stack as int32) and throw an exception on overflow (0x84)"
                 }
             },
             i8: {
-                type: "type",
+                type,
                 info: "Convert to an int64 (on the stack as int64) and throw an exception on overflow (0xB9)",
                 un: {
                     info: "Convert unsigned to an int64 (on the stack as int64) and throw an exception on overflow (0x85)"
                 }
             },
             u: {
-                type: "type",
+                type,
                 info: "Convert to a native unsigned int (on the stack as native int) and throw an exception on overflow (0xD5)",
                 un: {
                     info: "Convert unsigned to a native unsigned int (on the stack as native int) and throw an exception on overflow (0x8B)"
                 }
             },
             u1: {
-                type: "type",
+                type,
                 info: "Convert to an unsigned int8 (on the stack as int32) and throw an exception on overflow (0xB4)",
                 un: {
                     info: "Convert unsigned to an unsigned int8 (on the stack as int32) and throw an exception on overflow (0x86)"
                 }
             },
             u2: {
-                type: "type",
+                type,
                 info: "Convert to an unsigned int16 (on the stack as int32) and throw an exception on overflow (0xB6)",
                 un: {
                     info: "Convert unsigned to an unsigned int16 (on the stack as int32) and throw an exception on overflow (0x87)"
                 }
             },
             u4: {
-                type: "type",
+                type,
                 info: "Convert to an unsigned int32 (on the stack as int32) and throw an exception on overflow (0xB8)",
                 un: {
                     info: "Convert unsigned to an unsigned int32 (on the stack as int32) and throw an exception on overflow (0x88)"
                 }
             },
             u8: {
-                type: "type",
+                type,
                 info: "Convert to an unsigned int64 (on the stack as int64) and throw an exception on overflow (0xBA)",
                 un: {
                     info: "Convert unsigned to an unsigned int64 (on the stack as int64) and throw an exception on overflow (0x89)"
@@ -242,37 +244,37 @@ export const opcodes = {
             }
         },
         r: {
-            type: "type",
+            type,
             un: {
                 info: "Convert unsigned integer to floating-point, pushing F on stack (0x76)"
             }
         },
         r4: {
-            type: "type",
+            type,
             info: "Convert to float32, pushing F on stack (0x6B)"
         },
         r8: {
-            type: "type",
+            type,
             info: "Convert to float64, pushing F on stack (0x6C)"
         },
         u: {
-            type: "type",
+            type,
             info: "Convert to native unsigned int, pushing native int on stack (0xE0)"
         },
         u1: {
-            type: "type",
+            type,
             info: "Convert to unsigned int8, pushing int32 on stack (0xD2)"
         },
         u2: {
-            type: "type",
+            type,
             info: "Convert to unsigned int16, pushing int32 on stack (0xD1)"
         },
         u4: {
-            type: "type",
+            type,
             info: "Convert to unsigned int32, pushing int32 on stack (0x6D)"
         },
         u8: {
-            type: "type",
+            type,
             info: "Convert to unsigned int64, pushing int64 on stack (0x6E)"
         }
     },
@@ -315,19 +317,19 @@ export const opcodes = {
     ldarg: {
         info: "Load argument numbered num onto the stack (0xFE 0x09 <uint16>)",
         '0': {
-            type: "variable",
+            type: variable,
             info: "Load argument 0 onto the stack (0x02)"
         },
         '1': {
-            type: "variable",
+            type: variable,
             info: "Load argument 1 onto the stack (0x03)"
         },
         '2': {
-            type: "variable",
+            type: variable,
             info: "Load argument 2 onto the stack (0x4)"
         },
         '3': {
-            type: "variable",
+            type: variable,
             info: "Load argument 3 onto the stack (0x5)"
         },
         s: {
@@ -342,7 +344,7 @@ export const opcodes = {
     },
     ldc: {
         i4: {
-            type: "type",
+            type,
             info: "Push num of type int32 onto the stack as int32 (0x20 <int32>)",
             '0': {
                 type: "constant",
@@ -393,66 +395,66 @@ export const opcodes = {
             }
         },
         i8: {
-            type: "type",
+            type,
             info: "Push num of type int64 onto the stack as int64 (0x21 <int64>)"
         },
         r4: {
-            type: "type",
+            type,
             info: "Push num of type float32 onto the stack as F (0x22 <float32>)"
         },
         r8: {
-            type: "type",
+            type,
             info: "Push num of type float64 onto the stack as F (0x23 <float64>)"
         }
     },
     ldelem: {
         info: "Load the element at index onto the top of the stack (0xA3 <T>)",
         i: {
-            type: "type",
+            type,
             info: "Load the element with type native int at index onto the top of the stack as a native int (0x97)"
         },
         i1: {
-            type: "type",
+            type,
             info: "Load the element with type int8 at index onto the top of the stack as an int32 (0x90)"
         },
         i2: {
-            type: "type",
+            type,
             info: "Load the element with type int16 at index onto the top of the stack as an int32 (0x92)"
         },
         i4: {
-            type: "type",
+            type,
             info: "Load the element with type int32 at index onto the top of the stack as an int32 (0x94)"
         },
         i8: {
-            type: "type",
+            type,
             info: "Load the element with type int64 at index onto the top of the stack as an int64 (0x96)"
         },
         r4: {
-            type: "type",
+            type,
             info: "Load the element with type float32 at index onto the top of the stack as an F (0x98)"
         },
         r8: {
-            type: "type",
+            type,
             info: "Load the element with type float64 at index onto the top of the stack as an F (0x99)"
         },
         ref: {
-            type: "type",
+            type,
             info: "Load the element at index onto the top of the stack as an O. The type of the O is the same as the element type of the array pushed on the CIL stack (0x9A)"
         },
         u1: {
-            type: "type",
+            type,
             info: "Load the element with type unsigned int8 at index onto the top of the stack as an int32 (0x91)"
         },
         u2: {
-            type: "type",
+            type,
             info: "Load the element with type unsigned int16 at index onto the top of the stack as an int32 (0x93)"
         },
         u4: {
-            type: "type",
+            type,
             info: "Load the element with type unsigned int32 at index onto the top of the stack as an int32 (0x95)"
         },
         u8: {
-            type: "type",
+            type,
             info: "Load the element with type unsigned int64 at index onto the top of the stack as an int64 (alias for ldelem.i8) (0x96)"
         }
     },
@@ -470,51 +472,51 @@ export const opcodes = {
     },
     ldind: {
         i: {
-            type: "type",
+            type,
             info: "Indirect load value of type native int as native int on the stack (0x4D)"
         },
         i1: {
-            type: "type",
+            type,
             info: "Indirect load value of type int8 as int32 on the stack (0x46)"
         },
         i2: {
-            type: "type",
+            type,
             info: "Indirect load value of type int16 as int32 on the stack (0x48)"
         },
         i4: {
-            type: "type",
+            type,
             info: "Indirect load value of type int32 as int32 on the stack (0x4A)"
         },
         i8: {
-            type: "type",
+            type,
             info: "Indirect load value of type int64 as int64 on the stack (0x4C)"
         },
         r4: {
-            type: "type",
+            type,
             info: "Indirect load value of type float32 as F on the stack (0x4E)"
         },
         r8: {
-            type: "type",
+            type,
             info: "Indirect load value of type float64 as F on the stack (0x4F)"
         },
         ref: {
-            type: "type",
+            type,
             info: "Indirect load value of type object ref as O on the stack (0x50)"
         },
         u1: {
-            type: "type",
+            type,
             info: "Indirect load value of type unsigned int8 as int32 on the stack (0x47)"
         },
         u2: {
-            type: "type",
+            type,
             info: "Indirect load value of type unsigned int16 as int32 on the stack (0x49)"
         },
         u4: {
-            type: "type",
+            type,
             info: "Indirect load value of type unsigned int32 as int32 on the stack (0x4B)"
         },
         u8: {
-            type: "type",
+            type,
             info: "Indirect load value of type unsigned int64 as int64 on the stack (alias for ldind.i8) (0x4C)"
         }
     },
@@ -524,19 +526,19 @@ export const opcodes = {
     ldloc: {
         info: "Load local variable of index indx onto stack (0xFE 0x0C <uint16>)",
         '0': {
-            type: "variable",
+            type: variable,
             info: "Load local variable 0 onto stack (0x06)"
         },
         '1': {
-            type: "variable",
+            type: variable,
             info: "Load local variable 1 onto stack (0x7)"
         },
         '2': {
-            type: "variable",
+            type: variable,
             info: "Load local variable 2 onto stack (0x8)"
         },
         '3': {
-            type: "variable",
+            type: variable,
             info: "Load local variable 3 onto stack (0x9)"
         },
         s: {
@@ -657,35 +659,35 @@ export const opcodes = {
     stelem: {
         info: "Replace array element at index with the value on the stack (0xA4 <T>)",
         i: {
-            type: "type",
+            type,
             info: "Replace array element at index with the i value on the stack (0x9B)"
         },
         i1: {
-            type: "type",
+            type,
             info: "Replace array element at index with the int8 value on the stack (0x9C)"
         },
         i2: {
-            type: "type",
+            type,
             info: "Replace array element at index with the int16 value on the stack (0x9D)"
         },
         i4: {
-            type: "type",
+            type,
             info: "Replace array element at index with the int32 value on the stack (0x9E)"
         },
         i8: {
-            type: "type",
+            type,
             info: "Replace array element at index with the int64 value on the stack (0x9F)"
         },
         r4: {
-            type: "type",
+            type,
             info: "Replace array element at index with the float32 value on the stack (0xA0)"
         },
         r8: {
-            type: "type",
+            type,
             info: "Replace array element at index with the float64 value on the stack (0xA1)"
         },
         ref: {
-            type: "type",
+            type,
             info: "Replace array element at index with the ref value on the stack (0xA2)"
         }
     },
@@ -694,54 +696,54 @@ export const opcodes = {
     },
     stind: {
         i: {
-            type: "type",
+            type,
             info: "Store value of type native int into memory at address (0xDF)"
         },
         i1: {
-            type: "type",
+            type,
             info: "Store value of type int8 into memory at address (0x52)"
         },
         i2: {
-            type: "type",
+            type,
             info: "Store value of type int16 into memory at address (0x53)"
         },
         i4: {
-            type: "type",
+            type,
             info: "Store value of type int32 into memory at address (0x54)"
         },
         i8: {
-            type: "type",
+            type,
             info: "Store value of type int64 into memory at address (0x55)"
         },
         r4: {
-            type: "type",
+            type,
             info: "Store value of type float32 into memory at address (0x56)"
         },
         r8: {
-            type: "type",
+            type,
             info: "Store value of type float64 into memory at address (0x57)"
         },
         ref: {
-            type: "type",
+            type,
             info: "Store value of type object ref (type O) into memory at address (0x51)"
         }
     },
     stloc: {
         info: "Pop a value from stack into local variable index (0xFE 0x0E <uint16>)",
         '0': {
-            type: "variable",
+            type: variable,
             info: "Pop a value from stack into local variable 0 (0x0A)"
         },
         '1': {
-            type: "variable",
+            type: variable,
             info: "Pop a value from stack into local variable 1 (0x0B)"
         },
         '2': {
-            type: "variable",
+            type: variable,
             info: "Pop a value from stack into local variable 2 (0x0C)"
         },
         '3': {
-            type: "variable",
+            type: variable,
             info: "Pop a value from stack into local variable 3 (0x0D)"
         },
         s: {

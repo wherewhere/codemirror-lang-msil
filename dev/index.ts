@@ -6,8 +6,16 @@ import { indentWithTab } from '@codemirror/commands';
 import { msil, parser } from '../dist/';
 import { printTree } from './print-lezer-tree';
 import { oneDark } from '@codemirror/theme-one-dark';
+import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
 
-const doc = `.assembly _
+function getCodeFromHash() {
+    const hash = location.hash.substring(1);
+    if (hash) {
+        return decompressFromEncodedURIComponent(hash);
+    }
+}
+
+const doc = getCodeFromHash() || `.assembly _
 {
     .custom instance void [System.Private.CoreLib]System.Runtime.CompilerServices.CompilationRelaxationsAttribute::.ctor(int32) = (
         01 00 08 00 00 00 00 00
@@ -73,24 +81,43 @@ const syntax = document.createElement('pre');
 syntax.className = 'ͼo';
 document.getElementById('syntax')!.appendChild(syntax);
 
-new EditorView({
-  state: EditorState.create({
-    doc,
-    extensions: [
-      basicSetup,
-      msil(),
-      oneDark,
-      keymap.of([indentWithTab]),
-      indentUnit.of('    '),
-      EditorView.updateListener.of(e => {
-        if (e.docChanged) {
-          const doc = e.state.doc.toString();
-          syntax.textContent = printTree(parser.parse(doc), doc);
-        }
-      })
-    ],
-  }),
-  parent: document.querySelector('#editor')!,
+let hashChanged = false;
+const editor = new EditorView({
+    state: EditorState.create({
+        doc: doc,
+        extensions: [
+            basicSetup,
+            msil(),
+            oneDark,
+            keymap.of([indentWithTab]),
+            indentUnit.of('    '),
+            EditorView.updateListener.of(e => {
+                if (e.docChanged) {
+                    const doc = e.state.doc.toString();
+                    syntax.textContent = printTree(parser.parse(doc), doc);
+                    location.hash = compressToEncodedURIComponent(doc);
+                    hashChanged = true;
+                }
+            })
+        ],
+    }),
+    parent: document.querySelector('#editor')!,
 });
 
 syntax.textContent = printTree(parser.parse(doc), doc);
+addEventListener('hashchange', () => {
+    if (hashChanged) {
+        hashChanged = false;
+        return;
+    }
+    const code = getCodeFromHash();
+    if (code) {
+        editor.dispatch({
+            changes: {
+                from: 0,
+                to: editor.state.doc.length,
+                insert: code
+            }
+        });
+    }
+});

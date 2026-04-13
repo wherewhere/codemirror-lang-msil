@@ -68,5 +68,5 @@ export function msil() {
   return [
     new LanguageSupport(msilLanguage, msilLanguage.data.of({ autocomplete: msilCompletion })),
     msilTooltip()
-  ];
+  ] as const;
 }

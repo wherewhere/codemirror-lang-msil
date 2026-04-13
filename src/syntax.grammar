@@ -481,8 +481,8 @@ classMemberDecl {
 	| dkw<'.size'> int32
 	| dkw<'.pack'> int32
 	| exportDecl
-	| dkw<'.override'> typeSpec '::' methodName kw<'with'> callConv type typeSpec '::' methodName parens<sigArgs0>
-	| dkw<'.override'> kw<'method'> callConv type typeSpec '::' methodName genArity parens<sigArgs0> kw<'with'> kw<'method'> callConv type typeSpec '::' methodName genArity delim<sigArgs0>
+	| dkw<'.override'> typeSpec '::' methodName kw<'with'> callConv type typeSpec '::' methodName methodArgs
+	| dkw<'.override'> kw<'method'> callConv type typeSpec '::' methodName genArity methodArgs kw<'with'> kw<'method'> callConv type typeSpec '::' methodName genArity delim<sigArgs0>
 	| languageDecl
 	| compControl
 	| dkw<'.param'> kw<'type'> (('[' int32 ']') | dottedArgumentName)
@@ -534,8 +534,8 @@ repeatOpt {
 
 /* Method referencing */
 methodRef[@name=MethodRef] {
-	callConv type typeSpec '::' methodName (tyArgs0 | genArityNotEmpty) parens<sigArgs0>
-	| callConv type methodName (tyArgs0 | genArityNotEmpty) parens<sigArgs0>
+	callConv type typeSpec '::' methodName (tyArgs0 | genArityNotEmpty) methodArgs
+	| callConv type methodName (tyArgs0 | genArityNotEmpty) methodArgs
 	| mdtoken
 }
 
@@ -588,7 +588,7 @@ eventMemberDecl {
 
 /* Property declaration */
 propDecl[@name=Property] {
-	dkw<'.property'> propAttr* callConv type dottedPropertyName parens<sigArgs0>? initOpt? propBody
+	dkw<'.property'> propAttr* callConv type dottedPropertyName methodArgs? initOpt? propBody
 }
 
 propAttr[@name=PropertyAttribute] {
@@ -719,7 +719,7 @@ methodMemberDecl {
 	| dkw<'.vtentry'> int32 ':' int32
 	| dkw<'.override'> typeSpec '::' methodName
 
-	| dkw<'.override'> kw<'method'> callConv type typeSpec '::' methodName genArity parens<sigArgs0>
+	| dkw<'.override'> kw<'method'> callConv type typeSpec '::' methodName genArity methodArgs
 	| scopeBlock
 	| dkw<'.param'> kw<'type'> ('[' int32 ']' | dottedArgumentName)
 	| dkw<'.param'> kw<'constraint'> ('[' int32 ']' | dottedArgumentName) ',' typeSpec
@@ -1063,7 +1063,7 @@ instr_none[@name=OpCode] {
 	| kw<'endmac'>
 }
 
-instr_var[@name=OpCode] {
+instr_var[@name=OpCode.Variable] {
 	kw<'ldarg'> '.' 's'
 	| kw<'ldarga'> '.' 's'
 	| kw<'starg'> '.' 's'
@@ -1078,23 +1078,23 @@ instr_var[@name=OpCode] {
 	| kw<'stloc'>
 }
 
-instr_i[@name=OpCode] {
+instr_i[@name=OpCode.Int32] {
 	kw<'ldc'> '.' 'i4' '.' 's'
 	| kw<'ldc'> '.' 'i4'
 	| kw<'unaligned'> '.'
 	| kw<'no'> '.'
 }
 
-instr_i8[@name=OpCode] {
+instr_i8[@name=OpCode.Int64] {
 	kw<'ldc'> '.' 'i8'
 }
 
-instr_r[@name=OpCode] {
+instr_r[@name=OpCode.Real] {
 	kw<'ldc'> '.' 'r4'
 	| kw<'ldc'> '.' 'r8'
 }
 
-instr_brtarget[@name=OpCode] {
+instr_brtarget[@name=OpCode.Branch] {
 	kw<'br'> '.' 's'
 	| kw<'brfalse'> '.' 's'
 	| kw<'brtrue'> '.' 's'
@@ -1125,7 +1125,7 @@ instr_brtarget[@name=OpCode] {
 	| kw<'leave'> '.' 's'
 }
 
-instr_method[@name=OpCode] {
+instr_method[@name=OpCode.Method] {
 	kw<'jmp'>
 	| kw<'call'>
 	| kw<'callvirt'>
@@ -1134,7 +1134,7 @@ instr_method[@name=OpCode] {
 	| kw<'ldvirtftn'>
 }
 
-instr_field[@name=OpCode] {
+instr_field[@name=OpCode.Field] {
 	kw<'ldfld'>
 	| kw<'ldflda'>
 	| kw<'stfld'>
@@ -1143,7 +1143,7 @@ instr_field[@name=OpCode] {
 	| kw<'stsfld'>
 }
 
-instr_type[@name=OpCode] {
+instr_type[@name=OpCode.Type] {
 	kw<'cpobj'>
 	| kw<'ldobj'>
 	| kw<'castclass'>
@@ -1163,19 +1163,19 @@ instr_type[@name=OpCode] {
 	| kw<'sizeof'>
 }
 
-instr_string[@name=OpCode] {
+instr_string[@name=OpCode.String] {
 	kw<'ldstr'>
 }
 
-instr_sig[@name=OpCode] {
+instr_sig[@name=OpCode.Signature] {
 	kw<'calli'>
 }
 
-instr_tok[@name=OpCode] {
+instr_tok[@name=OpCode.Token] {
 	kw<'ldtoken'>
 }
 
-instr_switch[@name=OpCode] {
+instr_switch[@name=OpCode.Switch] {
 	kw<'switch'>
 }
 
@@ -1198,7 +1198,7 @@ instr[@name=Instrction] {
 	| instr_string compQstring
 	| instr_string kw<'ansi'> parens<compQstring>
 	| instr_string kw<'bytearray'> bytesDelim
-	| instr_sig callConv type parens<sigArgs0>
+	| instr_sig callConv type methodArgs
 	| instr_tok ownerType /* ownerType ::= memberRef | typeSpec */
 	| instr_switch parens<labels>
 }
@@ -1350,7 +1350,7 @@ type[@name=Type] {
 	| kw<'value'> kw<'class'> className
 	| type !typeArgs brackets<bounds1?>
 	| type !typeArgs (kw<'modreq'> | kw<'modopt'>) parens<typeSpec>
-	| methodSpec callConv type '*' parens<sigArgs0>
+	| methodSpec callConv type '*' methodArgs
 	| type !typeArgs chevrons<tyArgs1>
 	| '!' '!'? (int32 | dottedName)
 	| kw<'native'> kw<'unsigned'>? kw<'int'>

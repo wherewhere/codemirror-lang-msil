@@ -1,8 +1,9 @@
 import { hoverTooltip, type TooltipView } from "@codemirror/view";
 import { syntaxTree } from "@codemirror/language";
 import { getInstruction } from "./complete/keywords/instructions";
+import { keyword } from "./complete/keywords/store";
 
-type tokenType = "keyword";
+type tokenType = typeof keyword;
 type titleInfo = { title: string, type: tokenType };
 type hoverRender = (info: titleInfo, description: string) => TooltipView;
 
@@ -23,9 +24,9 @@ export function hoverRender({ title, type }: titleInfo, description: string) {
 export function msilTooltip(render: hoverRender = hoverRender, options?: Parameters<typeof hoverTooltip>[1]) {
     return hoverTooltip(function (view, pos) {
         let node = syntaxTree(view.state).resolveInner(pos);
-        if (node.name !== "OpCode") {
+        if (!node.name?.startsWith("OpCode")) {
             const parent = node.parent;
-            if (parent?.name === "OpCode") {
+            if (parent?.name?.startsWith("OpCode")) {
                 node = parent;
             }
             else {
@@ -40,7 +41,7 @@ export function msilTooltip(render: hoverRender = hoverRender, options?: Paramet
                 return {
                     pos,
                     create() {
-                        return render({ title: code, type: "keyword" }, desc);
+                        return render({ title: code, type: keyword }, desc);
                     }
                 };
             }

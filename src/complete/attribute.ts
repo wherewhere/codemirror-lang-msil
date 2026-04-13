@@ -3,6 +3,7 @@ import type { SyntaxNode } from "@lezer/common";
 import { classAttr, fieldAttr, eventAttr, propAttr, methodAttr, implAttr, paramAttr, asmAttr, exptAttr, manresAttr } from "./keywords/attribute";
 import { classExtendsDecl, callConv, tls, secAction } from "./keywords/others";
 import { typeOptions } from "./keywords/type";
+import { extern, keyword, type } from "./keywords/store";
 import { findPrevSibling, getCompletion } from "./helpers";
 
 export function classAttrBody(node: SyntaxNode, context: CompletionContext) {
@@ -19,8 +20,8 @@ export function classAttrBody(node: SyntaxNode, context: CompletionContext) {
             switch (code) {
                 case ".class":
                     return getCompletion(node.from, classAttr.concat({
-                        label: "extern",
-                        type: "keyword"
+                        label: extern,
+                        type: keyword
                     }));
                 case "nested":
                     return getCompletion(prevSibling.from, classAttr);
@@ -43,16 +44,16 @@ export function classBodyAttrBody(node: SyntaxNode, context: CompletionContext) 
         switch (code) {
             case ".param":
                 return getCompletion(node.from, [{
-                    label: "type",
-                    type: "keyword"
+                    label: type,
+                    type: keyword
                 }, {
                     label: "constraint",
-                    type: "keyword"
+                    type: keyword
                 }]);
             case ".interfaceimpl":
                 return getCompletion(node.from, [{
-                    label: "type",
-                    type: "keyword"
+                    label: type,
+                    type: keyword
                 }]);
         }
     }
@@ -69,9 +70,9 @@ export function eventAttrBody({ from }: Pick<SyntaxNode, "from">) {
 export function propAttrBody(node: SyntaxNode) {
     switch (node.prevSibling?.name) {
         case "Keyword":
-            return getCompletion(node.from, propAttr.concat(callConv));
+            return getCompletion(node.from, propAttr.concat(callConv, typeOptions));
         case "CallingConvention":
-            return getCompletion(node.from, callConv);
+            return getCompletion(node.from, callConv.concat(typeOptions));
     }
 }
 
@@ -106,8 +107,8 @@ export function assemblyAttrBody(node: SyntaxNode, context: CompletionContext) {
         const code = context.state.sliceDoc(prevSibling.from, prevSibling.to);
         if (code === ".assembly") {
             return getCompletion(node.from, asmAttr.concat({
-                label: "extern",
-                type: "keyword"
+                label: extern,
+                type: keyword
             }));
         }
     }
@@ -120,7 +121,7 @@ export function assemblyRefAttrBody(node: SyntaxNode, context: CompletionContext
         case "AssemblyName":
             return getCompletion(node.from, [{
                 label: "as",
-                type: "keyword"
+                type: keyword
             }]);
         case "Keyword":
             const code = context.state.sliceDoc(prevSibling.from, prevSibling.to);
@@ -138,7 +139,7 @@ export function assemblyBodyAttrBody(node: SyntaxNode, context: CompletionContex
         if (code === ".hash") {
             return getCompletion(node.from, [{
                 label: "algorithm",
-                type: "keyword"
+                type: keyword
             }]);
         }
     }
@@ -152,7 +153,7 @@ export function manifestResAttrBody(node: SyntaxNode) {
     if (node.prevSibling?.name === "IdentifierName") {
         return getCompletion(node.from, [{
             label: "as",
-            type: "keyword"
+            type: keyword
         }]);
     }
     return getCompletion(node.from, manresAttr);

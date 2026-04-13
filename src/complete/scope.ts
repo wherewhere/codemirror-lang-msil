@@ -1,7 +1,9 @@
 import type { CompletionContext } from "@codemirror/autocomplete";
 import type { SyntaxNode } from "@lezer/common";
 import { getInstruction } from "./keywords/instructions";
-import { sehClause } from "./keywords/others";
+import { typeOptions } from "./keywords/type";
+import { callConv, sehClause } from "./keywords/others";
+import { keyword, type } from "./keywords/store";
 import { getCompletion } from "./helpers";
 
 export function methodScopeBlock(node: SyntaxNode, context: CompletionContext) {
@@ -20,39 +22,66 @@ export function methodScopeBlock(node: SyntaxNode, context: CompletionContext) {
                 if (code === ".export") {
                     return getCompletion(node.from, [{
                         label: "as",
-                        type: "keyword"
+                        type: keyword
                     }]);
+                }
+            }
+            break;
+        case "Instrction":
+            let opcode = prevSibling.getChild("OpCode.Method");
+            if (opcode) {
+                const nextSibling = opcode.nextSibling;
+                if (nextSibling?.name === "MethodRef") {
+                    const firstChild = nextSibling.firstChild;
+                    if (firstChild?.name === "CallingConvention" && firstChild.nextSibling?.name === '⚠') {
+                        return getCompletion(node.from, callConv.concat(typeOptions));
+                    }
+                    break;
+                }
+                else {
+                    return getCompletion(node.from, callConv.concat({
+                        label: "mdtoken",
+                        type: keyword
+                    }, typeOptions));
                 }
             }
             break;
         case '⚠':
             const prev = prevSibling.prevSibling;
-            if (prev?.name === "Keyword") {
-                const code = context.state.sliceDoc(prev.from, prev.to);
-                switch (code) {
-                    case ".locals":
-                        return getCompletion(node.from, [{
-                            label: "init",
-                            type: "keyword"
-                        }]);
-                    case ".param":
-                        return getCompletion(node.from, [{
-                            label: "type",
-                            type: "keyword"
-                        }, {
-                            label: "constraint",
-                            type: "keyword"
-                        }]);
-                }
+            switch (prev?.name) {
+                case "Keyword":
+                    const code = context.state.sliceDoc(prev.from, prev.to);
+                    switch (code) {
+                        case ".locals":
+                            return getCompletion(node.from, [{
+                                label: "init",
+                                type: keyword
+                            }]);
+                        case ".param":
+                            return getCompletion(node.from, [{
+                                label: type,
+                                type: keyword
+                            }, {
+                                label: "constraint",
+                                type: keyword
+                            }]);
+                        case "method":
+                            return getCompletion(node.from, callConv.concat({
+                                label: "mdtoken",
+                                type: keyword
+                            }, typeOptions));
+                    }
+                case "CallingConvention":
+                    return getCompletion(node.from, callConv.concat(typeOptions));
             }
             break;
     }
     function getCode() {
-        if (node.parent?.name === "OpCode") {
+        if (node.parent?.name?.startsWith("OpCode")) {
             return context.state.sliceDoc(node.parent.from, node.parent.to).trimEnd();
         }
         else if (prevSibling?.name === "Instrction") {
-            if (prevSibling.firstChild?.name === "OpCode") {
+            if (prevSibling.firstChild?.name?.startsWith("OpCode")) {
                 const firstChild = prevSibling.firstChild;
                 if (firstChild.nextSibling?.name === '⚠') {
                     const code = context.state.sliceDoc(firstChild.from, firstChild.to);
@@ -80,7 +109,7 @@ export function methodScopeBlock(node: SyntaxNode, context: CompletionContext) {
         result.push({
             label: key,
             info: info,
-            type: type || "keyword"
+            type: type || keyword
         });
     }
     if (result.length) {

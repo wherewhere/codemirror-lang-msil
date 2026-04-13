@@ -18,7 +18,9 @@ export const dotPermissionset = ".permissionset";
 export const dotPublickey = ".publickey";
 export const dotVer = ".ver";
 
+export const abstract = "abstract";
 export const ansi = "ansi";
+export const as = "auto";
 export const assembly = "assembly";
 export const blob = "blob";
 export const bool = "bool";
@@ -31,6 +33,7 @@ export const date = "date";
 export const decimal = "decimal";
 export const error = "error";
 export const explicit = "explicit";
+export const extern = "extern";
 export const famandassem = "famandassem";
 export const family = "family";
 export const famorassem = "famorassem";
@@ -63,6 +66,7 @@ export const rtspecialname = "rtspecialname";
 export const safearray = "safearray";
 export const specialname = "specialname";
 export const struct = "struct";
+export const type = "type";
 export const uint = "uint";
 export const uint16 = "uint16";
 export const uint32 = "uint32";
@@ -75,7 +79,6 @@ export const valuetype = "valuetype";
 export const variant = "variant";
 export const windowsruntime = "windowsruntime";
 
-export const abstract_ = "abstract";
 export const class_ = "class";
 export const interface_ = "interface";
 export const private_ = "private";
@@ -85,3 +88,6 @@ export const void_ = "void";
 
 export const fieldSerInit = [float32, float64, int64, int32, int16, int8, `${unsigned} ${int64}`, `${unsigned} ${int32}`, `${unsigned} ${int16}`, `${unsigned} ${int8}`, uint64, uint32, uint16, uint8, char, bool, bytearray] as const;
 export const esHead = [dotLine, hashLine] as const;
+
+export const keyword = "keyword";
+export const variable = "variable";

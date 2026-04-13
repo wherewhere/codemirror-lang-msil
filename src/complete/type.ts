@@ -1,6 +1,7 @@
 import type { CompletionContext } from "@codemirror/autocomplete";
 import type { SyntaxNode } from "@lezer/common";
 import { securityAttrBody } from "./attribute";
+import { keyword } from "./keywords/store";
 
 export function typeSpecBody(node: SyntaxNode, context: CompletionContext) {
     const parent = node.parent?.parent;
@@ -14,7 +15,7 @@ export function typeSpecBody(node: SyntaxNode, context: CompletionContext) {
                         const result = typeBody(node, context);
                         result.options.push({
                             label: "method",
-                            type: "keyword"
+                            type: keyword
                         });
                         return result;
                     }

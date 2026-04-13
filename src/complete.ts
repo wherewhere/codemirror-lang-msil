@@ -1,15 +1,16 @@
 import type { CompletionContext } from "@codemirror/autocomplete";
 import { syntaxTree } from "@codemirror/language";
 import { methodScopeBlock } from "./complete/scope";
-import { isAtRoot } from "./complete/helpers";
+import { getCompletion, isAtRoot } from "./complete/helpers";
 import { assemblyBody, assemblyRefBody, classBody, eventBody, exptypeBody, manifestResBody, memberBody, methodBody, propBody } from "./complete/body";
 import { classAttrBody, fieldAttrBody, eventAttrBody, propAttrBody, methodAttrBody, dataAttrBody, securityAttrBody, assemblyAttrBody, assemblyRefAttrBody, exptAttrBody, manifestResAttrBody, classBodyAttrBody, paramAttrBody, assemblyBodyAttrBody } from "./complete/attribute";
 import { typeParamBody, marshalClauseBody, initOptionBody, sigArgsBody } from "./complete/others";
 import { typeSpecBody } from "./complete/type";
+import { dotCustom, extern, keyword } from "./complete/keywords/store";
 
 export function msilCompletion(context: CompletionContext) {
     const node = syntaxTree(context.state).resolveInner(context.pos, -1);
-    if (node.parent?.name === "OpCode" || node.prevSibling?.name === "Instrction") {
+    if (node.parent?.name?.startsWith("OpCode") || node.prevSibling?.name === "Instrction") {
         const result = methodScopeBlock(node, context);
         if (result) {
             return result;
@@ -45,13 +46,10 @@ export function msilCompletion(context: CompletionContext) {
             return memberBody(node.from);
         }
         else if (isAtRoot(node, ["TypeDefine"])) {
-            return {
-                from: node.from,
-                options: [{
-                    label: ".custom",
-                    type: "keyword"
-                }]
-            }
+            return getCompletion(node.from, [{
+                label: dotCustom,
+                type: keyword
+            }]);
         }
         else if (isAtRoot(node, ["ArgumentName"])) {
             return typeParamBody(node, context);
@@ -67,13 +65,10 @@ export function msilCompletion(context: CompletionContext) {
         const parent = node.parent;
         switch (parent?.name) {
             case "Module":
-                return {
-                    from: node.from,
-                    options: [{
-                        label: "extern",
-                        type: "keyword"
-                    }]
-                };
+                return getCompletion(node.from, [{
+                    label: extern,
+                    type: keyword
+                }]);
             case "Field":
                 return fieldAttrBody(node);
             case "Event":
@@ -87,16 +82,13 @@ export function msilCompletion(context: CompletionContext) {
             case "Security":
                 return securityAttrBody(node);
             case "File":
-                return {
-                    from: node.from,
-                    options: [{
-                        label: "nometadata",
-                        type: "keyword"
-                    }, {
-                        label: "alignment",
-                        type: "keyword"
-                    }]
-                };
+                return getCompletion(node.from, [{
+                    label: "nometadata",
+                    type: keyword
+                }, {
+                    label: "alignment",
+                    type: keyword
+                }]);
             case "Assembly":
                 return assemblyAttrBody(node, context);
             case "AssemblyReference":
@@ -108,13 +100,10 @@ export function msilCompletion(context: CompletionContext) {
             case "MethodName":
                 switch (parent.prevSibling?.name) {
                     case "Type":
-                        return {
-                            from: node.from,
-                            options: [{
-                                label: "marshal",
-                                type: "keyword"
-                            }]
-                        };
+                        return getCompletion(node.from, [{
+                            label: "marshal",
+                            type: keyword
+                        }]);
                     case "MarshalClause":
                         return marshalClauseBody(node, context);
                 }
