@@ -36,7 +36,7 @@ export function msilTooltip(render: hoverRender = hoverRender, options?: Paramet
         const code = view.state.sliceDoc(node.from, node.to);
         const opcode = getInstruction(code);
         if (opcode) {
-            const desc = opcode.info;
+            const desc = opcode.info?.tooltip;
             if (desc) {
                 return {
                     pos,

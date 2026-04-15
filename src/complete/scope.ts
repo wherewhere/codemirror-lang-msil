@@ -102,15 +102,28 @@ export function methodScopeBlock(node: SyntaxNode, context: CompletionContext) {
     if (!opcode) { return; }
     const result: { label: string, info?: string, type: string }[] = [];
     for (const key in opcode) {
-        if (key === "info" || key === "type") {
+        if (key === "info") {
             continue;
         }
-        const { info, type } = opcode[key] as { info?: string, type?: string };
-        result.push({
-            label: key,
-            info: info,
-            type: type || keyword
-        });
+        const item = opcode[key];
+        if (item) {
+            const info = item.info;
+            if (info) {
+                if (!info.reserved) {
+                    result.push({
+                        label: info.prefix ? key + '.' : key,
+                        info: info.tooltip,
+                        type: info.type || keyword
+                    });
+                }
+            }
+            else {
+                result.push({
+                    label: key,
+                    type: keyword
+                });
+            }
+        }
     }
     if (result.length) {
         return getCompletion(node.name === '.' ? node.to : node.from, result);

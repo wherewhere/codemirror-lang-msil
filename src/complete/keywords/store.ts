@@ -89,5 +89,6 @@ export const void_ = "void";
 export const fieldSerInit = [float32, float64, int64, int32, int16, int8, `${unsigned} ${int64}`, `${unsigned} ${int32}`, `${unsigned} ${int16}`, `${unsigned} ${int8}`, uint64, uint32, uint16, uint8, char, bool, bytearray] as const;
 export const esHead = [dotLine, hashLine] as const;
 
+export const constant = "constant";
 export const keyword = "keyword";
 export const variable = "variable";
