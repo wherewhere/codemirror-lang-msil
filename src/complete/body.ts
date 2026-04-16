@@ -1,5 +1,6 @@
 import { getCompletion } from "./helpers";
 import { memberDecl, classMemberDecl, eventMemberDecl, propMemberDecl, methodMemberDecl, assemblyMemberDecl, assemblyRefMemberDecl, exptypeMemberDecl, manifestResMemberDecl } from "./keywords/member";
+import { ddItem } from "./keywords/others";
 
 export function memberBody(from: number) {
     return getCompletion(from, memberDecl);
@@ -19,6 +20,10 @@ export function propBody(from: number) {
 
 export function methodBody(from: number) {
     return getCompletion(from, methodMemberDecl);
+}
+
+export function dataBody(from: number) {
+    return getCompletion(from, ddItem);
 }
 
 export function assemblyBody(from: number) {

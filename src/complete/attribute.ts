@@ -1,7 +1,7 @@
 import type { CompletionContext } from "@codemirror/autocomplete";
 import type { SyntaxNode } from "@lezer/common";
 import { classAttr, fieldAttr, eventAttr, propAttr, methodAttr, implAttr, paramAttr, asmAttr, exptAttr, manresAttr } from "./keywords/attribute";
-import { classExtendsDecl, callConv, tls, secAction } from "./keywords/others";
+import { classExtendsDecl, callConv, tls, secAction, ddItem } from "./keywords/others";
 import { typeOptions } from "./keywords/type";
 import { extern, keyword, type } from "./keywords/store";
 import { findPrevSibling, getCompletion } from "./helpers";
@@ -26,7 +26,7 @@ export function classAttrBody(node: SyntaxNode, context: CompletionContext) {
                 case "nested":
                     return getCompletion(prevSibling.from, classAttr);
             }
-            if (findPrevSibling(prevSibling, ["ClassName"])) {
+            if (findPrevSibling(prevSibling, "ClassName")) {
                 return getCompletion(node.from, classExtendsDecl);
             }
         }
@@ -93,8 +93,16 @@ export function paramAttrBody({ from }: Pick<SyntaxNode, "from">) {
     return getCompletion(from, paramAttr);
 }
 
-export function dataAttrBody({ from }: Pick<SyntaxNode, "from">) {
-    return getCompletion(from, tls);
+export function dataAttrBody(node: SyntaxNode) {
+    const prevSibling = node.prevSibling;
+    switch (prevSibling?.name) {
+        case '=':
+            return getCompletion(node.from, ddItem);
+        case "Keyword":
+            if (!findPrevSibling(prevSibling.prevSibling, '=')) {
+                return getCompletion(node.from, tls);
+            }
+    }
 }
 
 export function securityAttrBody({ from }: Pick<SyntaxNode, "from">) {

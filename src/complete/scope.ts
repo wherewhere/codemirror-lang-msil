@@ -81,17 +81,15 @@ export function methodScopeBlock(node: SyntaxNode, context: CompletionContext) {
             return context.state.sliceDoc(node.parent.from, node.parent.to).trimEnd();
         }
         else if (prevSibling?.name === "Instrction") {
-            if (prevSibling.firstChild?.name?.startsWith("OpCode")) {
-                const firstChild = prevSibling.firstChild;
-                if (firstChild.nextSibling?.name === '⚠') {
+            const firstChild = prevSibling.firstChild;
+            if (firstChild?.name?.startsWith("OpCode")) {
+                if (firstChild.lastChild?.name === '⚠') {
                     const code = context.state.sliceDoc(firstChild.from, firstChild.to);
                     if (!code.match(/\s/)) {
                         return code.trimEnd() + context.state.sliceDoc(node.from, node.to);
                     }
                 }
-                else if (firstChild.lastChild?.name !== '⚠') {
-                    return context.state.sliceDoc(node.from, node.to);
-                }
+                return context.state.sliceDoc(node.from, node.to);
             }
         }
         else {

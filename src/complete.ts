@@ -2,7 +2,7 @@ import type { CompletionContext } from "@codemirror/autocomplete";
 import { syntaxTree } from "@codemirror/language";
 import { methodScopeBlock } from "./complete/scope";
 import { getCompletion, isAtRoot } from "./complete/helpers";
-import { assemblyBody, assemblyRefBody, classBody, eventBody, exptypeBody, manifestResBody, memberBody, methodBody, propBody } from "./complete/body";
+import { assemblyBody, assemblyRefBody, classBody, dataBody, eventBody, exptypeBody, manifestResBody, memberBody, methodBody, propBody } from "./complete/body";
 import { classAttrBody, fieldAttrBody, eventAttrBody, propAttrBody, methodAttrBody, dataAttrBody, securityAttrBody, assemblyAttrBody, assemblyRefAttrBody, exptAttrBody, manifestResAttrBody, classBodyAttrBody, paramAttrBody, assemblyBodyAttrBody } from "./complete/attribute";
 import { typeParamBody, marshalClauseBody, initOptionBody, sigArgsBody } from "./complete/others";
 import { typeSpecBody } from "./complete/type";
@@ -18,7 +18,7 @@ export function msilCompletion(context: CompletionContext) {
     }
     const code = context.state.sliceDoc(node.from, node.to);
     if (code.startsWith('.') || code.startsWith('#')) {
-        let delim = isAtRoot(node, ["Delim"]);
+        let delim = isAtRoot(node, "Delim");
         if (delim) {
             switch (delim.parent?.name) {
                 case "Namespace":
@@ -42,24 +42,24 @@ export function msilCompletion(context: CompletionContext) {
                     return manifestResBody(node.from);
             }
         }
-        else if (isAtRoot(node, ["CompilationUnit"])) {
+        else if (isAtRoot(node, "CompilationUnit")) {
             return memberBody(node.from);
         }
-        else if (isAtRoot(node, ["TypeDefine"])) {
+        else if (isAtRoot(node, "TypeDefine")) {
             return getCompletion(node.from, [{
                 label: dotCustom,
                 type: keyword
             }]);
         }
-        else if (isAtRoot(node, ["ArgumentName"])) {
+        else if (isAtRoot(node, "ArgumentName")) {
             return typeParamBody(node, context);
         }
     }
     else if (code.match(/^\w/)) {
-        if (isAtRoot(node, ["Class"])) {
+        if (isAtRoot(node, "Class")) {
             return classAttrBody(node, context);
         }
-        else if (isAtRoot(node, ["ClassName"])) {
+        else if (isAtRoot(node, "ClassName")) {
             return typeSpecBody(node, context);
         }
         const parent = node.parent;
@@ -123,6 +123,8 @@ export function msilCompletion(context: CompletionContext) {
                         case "Method":
                         case "MethodScopeBlock":
                             return methodScopeBlock(node, context);
+                        case "Data":
+                            return dataBody(node.from);
                         case "MethodArguments":
                         case "LocalVariables":
                             return sigArgsBody(node, context);

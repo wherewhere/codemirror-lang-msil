@@ -221,6 +221,10 @@ labelNameId[@name=LabelName] {
 	idBase
 }
 
+dataNameId[@name=DataName] {
+	idBase
+}
+
 dottedNameBase {
 	sep1<idBase, '.'>
 }
@@ -521,7 +525,7 @@ fieldAttr[@name=FieldAttribute] {
 }
 
 atOpt {
-	kw<'at'> id
+	kw<'at'> dataNameId
 }
 
 initOpt[@name=InitOption] {
@@ -763,7 +767,7 @@ handlerBlock {
 
 /* Data declaration */
 dataDecl[@name=Data] {
-	dkw<'.data'> tls? (id '=')? ddBody
+	dkw<'.data'> tls? (dataNameId '=')? ddBody
 }
 
 tls {

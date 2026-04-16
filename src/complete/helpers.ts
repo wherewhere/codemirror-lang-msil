@@ -1,23 +1,22 @@
 import type { SyntaxNode } from "@lezer/common";
 
-export function findPrevSibling(node: SyntaxNode, nodes: readonly string[]) {
-    for (let pos: SyntaxNode | null = node; pos; pos = pos.prevSibling) {
-        if (nodes.indexOf(pos.name) > -1) { return pos; }
-        if (pos.type.isTop) { break; }
+export function findPrevSibling(node: SyntaxNode | null, name: string) {
+    for (let pos = node; pos; pos = pos.prevSibling) {
+        if (pos.name === name) { return pos; }
     }
 }
 
-export function isAtRoot(node: SyntaxNode, nodes: readonly string[]) {
-    if (nodes.indexOf(node.name) > -1) { return node; }
+export function isAtRoot(node: SyntaxNode, name: string) {
+    if (node.name === name) { return node; }
     let parent = node.parent;
     if (parent) {
         if (parent.name === '⚠') {
             parent = parent.parent;
-            if (parent && nodes.indexOf(parent.name) > -1) {
+            if (parent?.name === name) {
                 return parent;
             }
         }
-        else if (nodes.indexOf(parent.name) > -1) {
+        else if (parent.name === name) {
             return parent;
         }
     }

@@ -41,7 +41,7 @@ export const msilLanguage = LRLanguage.define({
         NamespaceName: tags.namespace,
         ClassName: tags.className,
         "ArgumentName FieldName": tags.variableName,
-        ConstName: tags.constant(tags.variableName),
+        "ConstName DataName": tags.constant(tags.variableName),
 
         MethodName: tags.function(tags.variableName),
         ParamName: [tags.emphasis, tags.variableName],
