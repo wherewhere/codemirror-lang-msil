@@ -1,4 +1,5 @@
 import type { CompletionContext } from "@codemirror/autocomplete";
+import type { SyntaxNode } from "@lezer/common";
 import { syntaxTree } from "@codemirror/language";
 import { methodScopeBlock } from "./complete/scope";
 import { getCompletion, isAtRoot } from "./complete/helpers";
@@ -8,8 +9,97 @@ import { typeParamBody, marshalClauseBody, initOptionBody, sigArgsBody } from ".
 import { typeSpecBody } from "./complete/type";
 import { dotCustom, extern, keyword } from "./complete/keywords/store";
 
+function getAttrCompletion(node: SyntaxNode, parent: SyntaxNode | null, context: CompletionContext) {
+    switch (parent?.name) {
+        case "Module":
+            return getCompletion(node.from, [{
+                label: extern,
+                type: keyword
+            }]);
+        case "Field":
+            return fieldAttrBody(node);
+        case "Event":
+            return eventAttrBody(node);
+        case "Property":
+            return propAttrBody(node);
+        case "Method":
+            return methodAttrBody(node);
+        case "Data":
+            return dataAttrBody(node);
+        case "Security":
+            return securityAttrBody(node);
+        case "File":
+            return getCompletion(node.from, [{
+                label: "nometadata",
+                type: keyword
+            }, {
+                label: "alignment",
+                type: keyword
+            }]);
+        case "Assembly":
+            return assemblyAttrBody(node, context);
+        case "AssemblyReference":
+            return assemblyRefAttrBody(node, context);
+        case "Export":
+            return exptAttrBody(node);
+        case "ManifestResource":
+            return manifestResAttrBody(node);
+        case "MethodName":
+            switch (parent.prevSibling?.name) {
+                case "Type":
+                    return getCompletion(node.from, [{
+                        label: "marshal",
+                        type: keyword
+                    }]);
+                case "MarshalClause":
+                    return marshalClauseBody(node, context);
+            }
+            break;
+        case "InitOption":
+            return initOptionBody(node);
+        case "SignatureArgument":
+            return sigArgsBody(node, context);
+        case "MarshalBlob":
+            return marshalClauseBody(node, context);
+        case "Delim":
+            const grand = parent.parent;
+            if (grand) {
+                switch (grand.name) {
+                    case "Class":
+                        return classBodyAttrBody(node, context);
+                    case "Method":
+                    case "MethodScopeBlock":
+                        return methodScopeBlock(node, context);
+                    case "Data":
+                        return dataBody(node.from);
+                    case "MethodArguments":
+                    case "LocalVariables":
+                        return sigArgsBody(node, context);
+                    case "MarshalClause":
+                        return marshalClauseBody(node, context);
+                    case "TypeParametersClause":
+                        return typeParamBody(node, context);
+                    case "ParameterAttribute":
+                        return paramAttrBody(node);
+                    case "Assembly":
+                        return assemblyBodyAttrBody(node, context);
+                }
+            }
+            break;
+    }
+}
+
 export function msilCompletion(context: CompletionContext) {
-    const node = syntaxTree(context.state).resolveInner(context.pos, -1);
+    if (context.aborted) { return; }
+    const tree = syntaxTree(context.state);
+    const node = tree.resolveInner(context.pos, -1);
+    const char = context.state.sliceDoc(context.pos - 1, context.pos);
+    if (char === ' ') {
+        const lastChild = node.lastChild;
+        if (lastChild && lastChild.to === context.pos) {
+            return getAttrCompletion(lastChild, node, context);
+        }
+    }
     if (node.parent?.name?.startsWith("OpCode") || node.prevSibling?.name === "Instrction") {
         const result = methodScopeBlock(node, context);
         if (result) {
@@ -62,83 +152,6 @@ export function msilCompletion(context: CompletionContext) {
         else if (isAtRoot(node, "ClassName")) {
             return typeSpecBody(node, context);
         }
-        const parent = node.parent;
-        switch (parent?.name) {
-            case "Module":
-                return getCompletion(node.from, [{
-                    label: extern,
-                    type: keyword
-                }]);
-            case "Field":
-                return fieldAttrBody(node);
-            case "Event":
-                return eventAttrBody(node);
-            case "Property":
-                return propAttrBody(node);
-            case "Method":
-                return methodAttrBody(node);
-            case "Data":
-                return dataAttrBody(node);
-            case "Security":
-                return securityAttrBody(node);
-            case "File":
-                return getCompletion(node.from, [{
-                    label: "nometadata",
-                    type: keyword
-                }, {
-                    label: "alignment",
-                    type: keyword
-                }]);
-            case "Assembly":
-                return assemblyAttrBody(node, context);
-            case "AssemblyReference":
-                return assemblyRefAttrBody(node, context);
-            case "Export":
-                return exptAttrBody(node);
-            case "ManifestResource":
-                return manifestResAttrBody(node);
-            case "MethodName":
-                switch (parent.prevSibling?.name) {
-                    case "Type":
-                        return getCompletion(node.from, [{
-                            label: "marshal",
-                            type: keyword
-                        }]);
-                    case "MarshalClause":
-                        return marshalClauseBody(node, context);
-                }
-                break;
-            case "InitOption":
-                return initOptionBody(node);
-            case "SignatureArgument":
-                return sigArgsBody(node, context);
-            case "MarshalBlob":
-                return marshalClauseBody(node, context);
-            case "Delim":
-                const grand = parent.parent;
-                if (grand) {
-                    switch (grand.name) {
-                        case "Class":
-                            return classBodyAttrBody(node, context);
-                        case "Method":
-                        case "MethodScopeBlock":
-                            return methodScopeBlock(node, context);
-                        case "Data":
-                            return dataBody(node.from);
-                        case "MethodArguments":
-                        case "LocalVariables":
-                            return sigArgsBody(node, context);
-                        case "MarshalClause":
-                            return marshalClauseBody(node, context);
-                        case "TypeParametersClause":
-                            return typeParamBody(node, context);
-                        case "ParameterAttribute":
-                            return paramAttrBody(node);
-                        case "Assembly":
-                            return assemblyBodyAttrBody(node, context);
-                    }
-                }
-                break;
-        }
+        return getAttrCompletion(node, node.parent, context);
     }
 }
