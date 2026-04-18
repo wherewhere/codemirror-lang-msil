@@ -16,6 +16,8 @@ function getAttrCompletion(node: SyntaxNode, parent: SyntaxNode | null, context:
                 label: extern,
                 type: keyword
             }]);
+        case "Class":
+            return classAttrBody(node, context);
         case "Field":
             return fieldAttrBody(node);
         case "Event":
@@ -93,12 +95,12 @@ export function msilCompletion(context: CompletionContext) {
     if (context.aborted) { return; }
     const tree = syntaxTree(context.state);
     const node = tree.resolveInner(context.pos, -1);
-    const char = context.state.sliceDoc(context.pos - 1, context.pos);
-    if (char === ' ') {
+    if (context.state.sliceDoc(context.pos - 1, context.pos) === ' ') {
         const lastChild = node.lastChild;
-        if (lastChild && lastChild.to === context.pos) {
+        if (lastChild?.to === context.pos) {
             return getAttrCompletion(lastChild, node, context);
         }
+        return;
     }
     if (node.parent?.name?.startsWith("OpCode") || node.prevSibling?.name === "Instrction") {
         const result = methodScopeBlock(node, context);
@@ -143,6 +145,23 @@ export function msilCompletion(context: CompletionContext) {
         }
         else if (isAtRoot(node, "ArgumentName")) {
             return typeParamBody(node, context);
+        }
+        else if (isAtRoot(node, "Method")) {
+            let parent = node;
+            if (parent.parent?.name === '⚠') {
+                parent = parent.parent;
+            }
+            switch (parent.prevSibling?.name) {
+                case "Type":
+                case "MarshalClause":
+                    return getCompletion(node.from, [{
+                        label: ".ctor",
+                        type: keyword
+                    }, {
+                        label: ".cctor",
+                        type: keyword
+                    }]);
+            }
         }
     }
     else if (code.match(/^\w/)) {

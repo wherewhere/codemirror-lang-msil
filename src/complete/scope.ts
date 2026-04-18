@@ -12,7 +12,10 @@ export function methodScopeBlock(node: SyntaxNode, context: CompletionContext) {
         case "SEHBlock":
             const name = prevSibling.lastChild?.prevSibling?.name;
             if (name === "TryBlock" || name === "SEHClause") {
-                return getCompletion(node.from, sehClause);
+                return getCompletion(node.from, sehClause.concat({
+                    label: "to",
+                    type: keyword
+                }));
             }
             break;
         case "Delim":

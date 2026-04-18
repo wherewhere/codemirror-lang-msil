@@ -188,7 +188,7 @@ languageDecl[@name=Language] {
 
 /* Basic tokens */
 idBase {
-	identifier ~tid
+	identifier
 	/* Allow methodImpl attributes to be used as identifiers */
 	| kw<'native'>
 	| kw<'cil'>
@@ -744,7 +744,7 @@ sehBlock[@name=SEHBlock] {
 
 tryBlock[@name=TryBlock] {
 	dkw<'.try'> scopeBlock
-	| dkw<'.try'> id kw<'to'> id
+	| dkw<'.try'> labelNameId kw<'to'> labelNameId
 	| dkw<'.try'> int32 kw<'to'> int32
 }
 
@@ -761,7 +761,7 @@ catchClause {
 
 handlerBlock {
 	scopeBlock
-	| kw<'handler'> id kw<'to'> id
+	| kw<'handler'> labelNameId kw<'to'> labelNameId
 	| kw<'handler'> int32 kw<'to'> int32
 }
 

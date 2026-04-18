@@ -81,6 +81,11 @@ const syntax = document.createElement('pre');
 syntax.className = 'ͼo';
 document.getElementById('syntax')!.appendChild(syntax);
 
+function setTimeoutAsync(timeout?: number) {
+    return new Promise<void>(resolve => setTimeout(resolve, timeout));
+}
+
+let count = -1;
 let hashChanged = false;
 const editor = new EditorView({
     state: EditorState.create({
@@ -91,12 +96,20 @@ const editor = new EditorView({
             oneDark,
             keymap.of([indentWithTab]),
             indentUnit.of('    '),
-            EditorView.updateListener.of(e => {
+            EditorView.updateListener.of(async e => {
                 if (e.docChanged) {
-                    const doc = e.state.doc.toString();
-                    syntax.textContent = printTree(parser.parse(doc), doc);
-                    location.hash = compressToEncodedURIComponent(doc);
-                    hashChanged = true;
+                    try {
+                        count++;
+                        const doc = e.state.doc.toString();
+                        syntax.textContent = printTree(parser.parse(doc), doc);
+                        await setTimeoutAsync(500);
+                        if (count != 0) { return; }
+                        location.hash = compressToEncodedURIComponent(doc);
+                        hashChanged = true;
+                    }
+                    finally {
+                        count--;
+                    }
                 }
             })
         ],
