@@ -9,6 +9,8 @@ import {
 } from "@codemirror/language";
 import { styleTags, tags } from "@lezer/highlight";
 
+const opcodeSelector = "OpCode OpCode.Variable OpCode.Int32 OpCode.Int64 OpCode.Real OpCode.Branch OpCode.Method OpCode.Field OpCode.Type OpCode.String OpCode.Signature OpCode.Token OpCode.Switch";
+
 export const msilLanguage = LRLanguage.define({
   parser: parser.configure({
     props: [
@@ -20,7 +22,6 @@ export const msilLanguage = LRLanguage.define({
       }),
       styleTags({
         "Keyword SimpleType": tags.keyword,
-        OpCode: tags.special(tags.keyword),
         BooleanLiteral: tags.bool,
         NullLiteral: tags.null,
         "IntegerLiteral ByteLiteral": tags.integer,
@@ -50,7 +51,9 @@ export const msilLanguage = LRLanguage.define({
 
         "( )": tags.paren,
         "{ }": tags.brace,
-        "[ ]": tags.squareBracket
+        "[ ]": tags.squareBracket,
+
+        [opcodeSelector]: tags.special(tags.keyword)
       })
     ]
   }),
@@ -64,9 +67,18 @@ export const msilLanguage = LRLanguage.define({
 import { msilCompletion } from "./complete";
 import { msilTooltip } from "./tooltip";
 
-export function msil() {
+type Options = {
+  autocomplete?: {
+  },
+  tooltip?: {
+    render?: Parameters<typeof msilTooltip>[0],
+    options?: Exclude<Parameters<typeof msilTooltip>[1], undefined>
+  }
+};
+
+export function msil({ tooltip }: Options = {}) {
   return [
     new LanguageSupport(msilLanguage, msilLanguage.data.of({ autocomplete: msilCompletion })),
-    msilTooltip()
+    msilTooltip(tooltip?.render, tooltip?.options)
   ] as const;
 }

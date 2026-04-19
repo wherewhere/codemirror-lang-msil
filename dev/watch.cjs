@@ -7,7 +7,7 @@ const { options } = require("@codemirror/buildhelper/src/options");
 const args = process.argv.slice(2);
 
 if (args.length != 1) {
-  console.log("Usage: cm-buildhelper src/mainfile.ts");
+  console.log("Usage: node ./dev/watch.cjs src/mainfile.ts");
   process.exit(1);
 }
 
@@ -47,7 +47,7 @@ async function runBuild() {
   console.log(`Rebuilding ${main}`);
   building = true;
   try {
-    await build(main, options);
+    await build(main, { ...options, sourceMap: true });
     console.log("Rebuilding done.");
   }
   catch (e) {
