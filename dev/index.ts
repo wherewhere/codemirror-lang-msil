@@ -92,7 +92,13 @@ const editor = new EditorView({
         doc: doc,
         extensions: [
             basicSetup,
-            msil(),
+            msil({
+                tooltip: {
+                    options: {
+                        hideOnChange: true
+                    }
+                }
+            }),
             oneDark,
             keymap.of([indentWithTab]),
             indentUnit.of('    '),
