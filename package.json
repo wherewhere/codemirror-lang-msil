@@ -50,25 +50,14 @@
     "url": "git+https://github.com/wherewhere/codemirror-lang-msil.git"
   },
   "peerDependencies": {
-    "@codemirror/autocomplete": "^6.0.0",
     "@codemirror/language": "^6.0.0",
-    "@codemirror/state": "^6.0.0",
     "@codemirror/view": "^6.0.0",
-    "@lezer/common": "^1.0.0",
     "@lezer/highlight": "^1.0.0",
     "@lezer/lr": "^1.0.0"
   },
   "devDependencies": {
-    "@codemirror/autocomplete": "^6.0.0",
     "@codemirror/buildhelper": "^1.0.0",
-    "@codemirror/language": "^6.0.0",
-    "@codemirror/state": "^6.0.0",
     "@codemirror/theme-one-dark": "^6.0.0",
-    "@codemirror/view": "^6.0.0",
-    "@lezer/common": "^1.0.0",
-    "@lezer/generator": "^1.0.0",
-    "@lezer/highlight": "^1.0.0",
-    "@lezer/lr": "^1.0.0",
     "@types/node": "^25.6.0",
     "@vitejs/plugin-legacy": "^8.0.0",
     "codemirror": "^6.0.0",

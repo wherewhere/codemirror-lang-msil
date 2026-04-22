@@ -77,8 +77,10 @@ type Options = {
 };
 
 export function msil({ tooltip }: Options = {}) {
-    return [
-        new LanguageSupport(msilLanguage, msilLanguage.data.of({ autocomplete: msilCompletion })),
+    return new LanguageSupport(msilLanguage, [
+        msilLanguage.data.of({
+            autocomplete: msilCompletion
+        }),
         msilTooltip(tooltip?.render, tooltip?.options)
-    ] as const;
+    ]);
 }
