@@ -3,7 +3,7 @@ import type { SyntaxNode } from "@lezer/common";
 import { typarAttrib, paramAttr } from "./keywords/attribute";
 import { fieldInit } from "./keywords/others";
 import { variantType, nativeType, typeOptions } from "./keywords/type";
-import { keyword } from "./keywords/store";
+import { keyword, marshal } from "./keywords/store";
 import { getCompletion } from "./helpers";
 
 export function initOptionBody({ from }: Pick<SyntaxNode, "from">) {
@@ -47,7 +47,7 @@ export function sigArgsBody(node: SyntaxNode, context: CompletionContext) {
     switch (node.prevSibling?.name) {
         case "Type":
             return getCompletion(node.from, [{
-                label: "marshal",
+                label: marshal,
                 type: keyword
             }]);
         case "MarshalClause":

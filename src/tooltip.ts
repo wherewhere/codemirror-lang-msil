@@ -23,7 +23,7 @@ export function hoverRender({ title, type }: titleInfo, description: string) {
 
 export function msilTooltip(render: hoverRender = hoverRender, options?: Parameters<typeof hoverTooltip>[1]) {
     return hoverTooltip(function (view, pos) {
-        let node = syntaxTree(view.state).resolveInner(pos);
+        let node = syntaxTree(view.state).resolve(pos);
         if (!node.name?.startsWith("OpCode")) {
             const parent = node.parent;
             if (parent?.name?.startsWith("OpCode")) {

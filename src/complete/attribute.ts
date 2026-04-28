@@ -16,15 +16,15 @@ export function classAttrBody(node: SyntaxNode, context: CompletionContext) {
             prevSibling = prevSibling.prevSibling;
         }
         if (prevSibling) {
+            if (prevSibling.name === "ClassAttribute" && prevSibling.lastChild?.name === '⚠') {
+                return getCompletion(prevSibling.from, classAttr);
+            }
             const code = context.state.sliceDoc(prevSibling.from, prevSibling.to).trimEnd();
-            switch (code) {
-                case ".class":
-                    return getCompletion(node.from, classAttr.concat({
-                        label: extern,
-                        type: keyword
-                    }));
-                case "nested":
-                    return getCompletion(prevSibling.from, classAttr);
+            if (code === ".class") {
+                return getCompletion(node.from, classAttr.concat({
+                    label: extern,
+                    type: keyword
+                }));
             }
             if (findPrevSibling(prevSibling, "ClassName")) {
                 return getCompletion(node.from, classExtendsDecl);

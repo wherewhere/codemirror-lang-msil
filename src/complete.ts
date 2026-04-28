@@ -7,7 +7,8 @@ import { assemblyBody, assemblyRefBody, classBody, dataBody, eventBody, exptypeB
 import { classAttrBody, fieldAttrBody, eventAttrBody, propAttrBody, methodAttrBody, dataAttrBody, securityAttrBody, assemblyAttrBody, assemblyRefAttrBody, exptAttrBody, manifestResAttrBody, classBodyAttrBody, paramAttrBody, assemblyBodyAttrBody } from "./complete/attribute";
 import { typeParamBody, marshalClauseBody, initOptionBody, sigArgsBody } from "./complete/others";
 import { typeSpecBody } from "./complete/type";
-import { dotCustom, extern, keyword } from "./complete/keywords/store";
+import { dotCustom, extern, keyword, marshal } from "./complete/keywords/store";
+import { typeOptions } from "./complete/keywords/type";
 
 function getAttrCompletion(node: SyntaxNode, parent: SyntaxNode | null, context: CompletionContext) {
     switch (parent?.name) {
@@ -19,6 +20,13 @@ function getAttrCompletion(node: SyntaxNode, parent: SyntaxNode | null, context:
         case "Class":
             return classAttrBody(node, context);
         case "Field":
+            if (node.prevSibling?.name === "Type") {
+                const prevSibling = node.prevSibling;
+                if (prevSibling.lastChild?.name === '⚠') {
+                    return getCompletion(prevSibling.from, typeOptions);
+                }
+                break;
+            }
             return fieldAttrBody(node);
         case "Event":
             return eventAttrBody(node);
@@ -49,10 +57,16 @@ function getAttrCompletion(node: SyntaxNode, parent: SyntaxNode | null, context:
         case "MethodName":
             switch (parent.prevSibling?.name) {
                 case "Type":
-                    return getCompletion(node.from, [{
-                        label: "marshal",
-                        type: keyword
-                    }]);
+                    const prevSibling = parent.prevSibling;
+                    if (prevSibling.lastChild?.name === '⚠') {
+                        return getCompletion(prevSibling.from, typeOptions);
+                    }
+                    else {
+                        return getCompletion(node.from, [{
+                            label: marshal,
+                            type: keyword
+                        }]);
+                    }
                 case "MarshalClause":
                     return marshalClauseBody(node, context);
             }
@@ -94,7 +108,7 @@ function getAttrCompletion(node: SyntaxNode, parent: SyntaxNode | null, context:
 export function msilCompletion(context: CompletionContext) {
     if (context.aborted) { return; }
     const tree = syntaxTree(context.state);
-    const node = tree.resolveInner(context.pos, -1);
+    const node = tree.resolve(context.pos, -1);
     if (context.state.sliceDoc(context.pos - 1, context.pos) === ' ') {
         const lastChild = node.lastChild;
         if (lastChild?.to === context.pos) {

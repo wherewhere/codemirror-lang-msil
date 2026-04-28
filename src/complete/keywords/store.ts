@@ -58,6 +58,7 @@ export const int8 = "int8";
 export const iunknown = "iunknown";
 export const lpstr = "lpstr";
 export const lpwstr = "lpwstr";
+export const marshal = "marshal";
 export const native = "native";
 export const nested = "nested";
 export const object = "object";
