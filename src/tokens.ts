@@ -1,29 +1,11 @@
 import { ExternalTokenizer, type InputStream } from "@lezer/lr";
 import { dotIdentifier, identifier } from "./syntax.grammar.terms";
 
-const CHAR_DOT = 46;
-const CHAR_A = 65;
-const CHAR_Z = 90;
-const CHAR_LOWER_A = 97;
-const CHAR_LOWER_Z = 122;
-const CHAR_PERCENT = 37;
-const CHAR_HASH = 35;
-const CHAR_DOLLAR = 36;
-const CHAR_AT = 64;
-const CHAR_UNDERSCORE = 95;
-const CHAR_TILDE = 126;
-const CHAR_QUESTION = 63;
-const CHAR_BACKTICK = 96;
-
-const UNICODE_LETTER_RE = /^\p{L}$/u;
-const UNICODE_DECIMAL_DIGIT_RE = /^\p{Nd}$/u;
-
-const LETTER_MASK = 1;
-const DIGIT_MASK = 2;
-const codePointClassCache = new Map<number, number>();
-
 function isWhitespace(c: number) {
-	return c === 32 || c === 9 || c === 10 || c === 13;
+	return c === 32 	//  
+		|| c === 9 		// \t
+		|| c === 10 	// \n
+		|| c === 13; 	// \r
 }
 
 function isDotBoundaryBefore(c: number) {
@@ -42,7 +24,7 @@ function isDotBoundaryBefore(c: number) {
 }
 
 function isLetter(c: number) {
-	return (c >= CHAR_A && c <= CHAR_Z) || (c >= CHAR_LOWER_A && c <= CHAR_LOWER_Z);
+	return (c >= 65 && c <= 90) || (c >= 97 && c <= 122);
 }
 
 function peekCodePoint(input: InputStream, offset: number) {
@@ -61,6 +43,13 @@ function peekCodePoint(input: InputStream, offset: number) {
 
 	return { codePoint: first, size: 1 };
 }
+
+const LETTER_MASK = 1;
+const DIGIT_MASK = 2;
+const codePointClassCache = new Map<number, number>();
+
+const UNICODE_LETTER_RE = /^\p{L}$/u;
+const UNICODE_DECIMAL_DIGIT_RE = /^\p{Nd}$/u;
 
 function getUnicodeType(codePoint: number) {
 	if (codePoint < 0) {
@@ -81,25 +70,27 @@ function getUnicodeType(codePoint: number) {
 	return mask;
 }
 
+
 function isIdentifierFirst(codePoint: number) {
 	switch (codePoint) {
-		case CHAR_DOLLAR:
-		case CHAR_AT:
-		case CHAR_UNDERSCORE:
+		case 36: 	// $
+		case 64: 	// @
+		case 95: 	// _
 			return true;
 		default:
 			return !!(getUnicodeType(codePoint) & LETTER_MASK);
 	}
 }
 
+
 function isIdentifierNext(codePoint: number) {
 	switch (codePoint) {
-		case CHAR_UNDERSCORE:
-		case CHAR_HASH:
-		case CHAR_DOLLAR:
-		case CHAR_AT:
-		case CHAR_QUESTION:
-		case CHAR_BACKTICK:
+		case 95:	// _
+		case 35: 	// #
+		case 36: 	// $
+		case 64: 	// @
+		case 63: 	// ?
+		case 96: 	// `
 			return true;
 		default:
 			const type = getUnicodeType(codePoint);
@@ -107,12 +98,13 @@ function isIdentifierNext(codePoint: number) {
 	}
 }
 
+
 // Contextual tokenizer for dot-prefixed directive identifiers (.class, .namespace, .ctor, …).
 // contextual: true means it only runs when the parser state explicitly expects
 // a dotIdentifier token, so it does NOT compete with the plain '.' separator
 // inside dottedName rules.
 export const dotTokens = new ExternalTokenizer(input => {
-	if (input.next !== CHAR_DOT) { return; }
+	if (input.next !== 46) { return; }
 
 	const prev = input.peek(-1);
 	if (!isDotBoundaryBefore(prev)) { return; }
@@ -137,7 +129,7 @@ export const idTokens = new ExternalTokenizer(input => {
 
 	while (true) {
 		const ch = input.peek(offset);
-		if (ch === CHAR_PERCENT || ch === CHAR_TILDE) {
+		if (ch === 37 || ch === 126) {
 			offset++;
 			continue;
 		}

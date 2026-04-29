@@ -80,12 +80,12 @@ export function methodScopeBlock(node: SyntaxNode, context: CompletionContext) {
             break;
     }
     function getCode() {
-        if (node.parent?.name?.startsWith("OpCode")) {
+        if (node.parent?.type?.is("OpCode")) {
             return context.state.sliceDoc(node.parent.from, node.parent.to).trimEnd();
         }
         else if (prevSibling?.name === "Instrction") {
             const firstChild = prevSibling.firstChild;
-            if (firstChild?.name?.startsWith("OpCode")) {
+            if (firstChild?.type?.is("OpCode")) {
                 if (firstChild.lastChild?.name === '⚠') {
                     const code = context.state.sliceDoc(firstChild.from, firstChild.to);
                     if (!code.match(/\s/)) {

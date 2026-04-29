@@ -9,16 +9,18 @@ import {
 } from "@codemirror/language";
 import { styleTags, tags } from "@lezer/highlight";
 
-const opcodeSelector = "OpCode OpCode.Variable OpCode.Int32 OpCode.Int64 OpCode.Real OpCode.Branch OpCode.Method OpCode.Field OpCode.Type OpCode.String OpCode.Signature OpCode.Token OpCode.Switch";
-
 export const msilLanguage = LRLanguage.define({
     parser: parser.configure({
         props: [
             indentNodeProp.add({
-                Delim: continuedIndent()
+                Instrction: continuedIndent(),
+                Declaration: continuedIndent({ except: /^\s*{/ }),
+                Delim: continuedIndent({ except: /^\s*[\)\]\}]/ }),
+                SEHBlock: continuedIndent({ except: /^\s*({|(catch|filter|finally|fault)\b)/ })
             }),
             foldNodeProp.add({
-                Delim: foldInside
+                Delim: foldInside,
+                BlockComment(tree) { return { from: tree.from + 2, to: tree.to - 2 } }
             }),
             styleTags({
                 "Keyword SimpleType": tags.keyword,
@@ -29,6 +31,8 @@ export const msilLanguage = LRLanguage.define({
                 'QSTRING SQSTRING': tags.string,
                 LineComment: tags.lineComment,
                 BlockComment: tags.blockComment,
+
+                OpCode: tags.special(tags.keyword),
 
                 "Astrisk + - Not & | < > =": tags.operator,
                 ". : Slash ::": tags.separator,
@@ -51,29 +55,23 @@ export const msilLanguage = LRLanguage.define({
 
                 "( )": tags.paren,
                 "{ }": tags.brace,
-                "[ ]": tags.squareBracket,
-
-                [opcodeSelector]: tags.special(tags.keyword)
+                "[ ]": tags.squareBracket
             })
         ]
     }),
     languageData: {
         commentTokens: { line: "//", block: { open: "/*", close: "*/" } },
         closeBrackets: { brackets: ['(', '[', '{', '"', '\'', '<'] },
-        indentOnInput: /^\s*((\)|\]|\})$|(catch|finally)\b)/
+        indentOnInput: /^\s*([\)\]\}]$|(catch|filter|finally|fault)\b)/
     }
 });
 
-import { msilCompletion } from "./complete";
-import { msilTooltip } from "./tooltip";
+import { msilCompletion, type CompletionOptions } from "./complete";
+import { msilTooltip, type TooltipOptions } from "./tooltip";
 
-type Options = {
-    autocomplete?: {
-    },
-    tooltip?: {
-        render?: Parameters<typeof msilTooltip>[0],
-        options?: Exclude<Parameters<typeof msilTooltip>[1], undefined>
-    }
+export type Options = {
+    autocomplete?: CompletionOptions,
+    tooltip?: TooltipOptions
 };
 
 export function msil({ tooltip }: Options = {}) {

@@ -3,7 +3,7 @@ import { EditorView, keymap } from '@codemirror/view';
 import { basicSetup } from 'codemirror';
 import { indentUnit } from '@codemirror/language';
 import { indentWithTab } from '@codemirror/commands';
-import { msil, parser } from '../dist/';
+import { msil, parser, msilFormatter } from '../dist/';
 import { printTree } from './print-lezer-tree';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
@@ -100,7 +100,10 @@ const editor = new EditorView({
                 }
             }),
             oneDark,
-            keymap.of([indentWithTab]),
+            keymap.of([
+                indentWithTab,
+                { key: 'Shift-Alt-f', run: msilFormatter(), preventDefault: true }
+            ]),
             indentUnit.of('    '),
             EditorView.updateListener.of(async e => {
                 if (e.docChanged) {

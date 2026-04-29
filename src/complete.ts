@@ -54,6 +54,8 @@ function getAttrCompletion(node: SyntaxNode, parent: SyntaxNode | null, context:
             return exptAttrBody(node);
         case "ManifestResource":
             return manifestResAttrBody(node);
+        case "Type":
+            return getCompletion(parent.from, typeOptions);
         case "MethodName":
             switch (parent.prevSibling?.name) {
                 case "Type":
@@ -105,10 +107,12 @@ function getAttrCompletion(node: SyntaxNode, parent: SyntaxNode | null, context:
     }
 }
 
+export type CompletionOptions = object;
+
 export function msilCompletion(context: CompletionContext) {
     if (context.aborted) { return; }
     const tree = syntaxTree(context.state);
-    const node = tree.resolve(context.pos, -1);
+    const node = tree.resolveInner(context.pos, -1);
     if (context.state.sliceDoc(context.pos - 1, context.pos) === ' ') {
         const lastChild = node.lastChild;
         if (lastChild?.to === context.pos) {
@@ -116,7 +120,7 @@ export function msilCompletion(context: CompletionContext) {
         }
         return;
     }
-    if (node.parent?.name?.startsWith("OpCode") || node.prevSibling?.name === "Instrction") {
+    if (node.parent?.type?.is("OpCode") || node.prevSibling?.name === "Instrction") {
         const result = methodScopeBlock(node, context);
         if (result) {
             return result;

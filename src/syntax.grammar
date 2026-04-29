@@ -1,4 +1,4 @@
-@top START[@name=CompilationUnit] { compilationUnit }
+@top START[@name=CompilationUnit, group=msil] { compilationUnit }
 
 @detectDelim
 
@@ -182,7 +182,7 @@ compQstring {
 	sep1<QSTRING, '+'>
 }
 
-languageDecl[@name=Language] {
+languageDecl[@name=Language, group=Declaration] {
 	dkw<'.language'> SQSTRING (',' SQSTRING (',' SQSTRING)?)?
 }
 
@@ -292,7 +292,7 @@ float64 {
 }
 
 /* Aliasing of types, type specs, methods, fields and custom attributes */
-typedefDecl[@name=TypeDefine] {
+typedefDecl[@name=TypeDefine, group=Declaration] {
 	dkw<'.typedef'> (type | className | memberRef | customDescr | customDescrWithOwner) kw<'as'> dottedName
 }
 
@@ -345,7 +345,7 @@ fieldOrProp {
 	| kw<'property'>
 }
 
-customAttrDecl[@name=CustomAttribute] {
+customAttrDecl[@name=CustomAttribute, group=Declaration] {
 	customDescr
 	| customDescrWithOwner
 }
@@ -360,12 +360,12 @@ serializType {
 }
 
 /* Module declaration */
-moduleDecl[@name=Module] {
+moduleDecl[@name=Module, group=Declaration] {
 	dkw<'.module'> kw<'extern'>? dottedModuleName?
 }
 
 /*  VTable Fixup table declaration  */
-vtfixupDecl[@name=VTableFixup] {
+vtfixupDecl[@name=VTableFixup, group=Declaration] {
 	dkw<'.vtfixup'> brackets<int32> vtfixupAttr* kw<'at'> id
 }
 
@@ -377,12 +377,12 @@ vtfixupAttr {
 	| kw<'retainappdomain'>
 }
 
-vtableDecl[@name=VTable] {
+vtableDecl[@name=VTable, group=Declaration] {
 	dkw<'.vtable'> '=' bytesDelim /* deprecated */
 }
 
 /* Namespace and class declaration */
-namespaceDecl[@name=Namespace] {
+namespaceDecl[@name=Namespace, group=Declaration] {
 	dkw<'.namespace'> dottedNamespaceName namespaceBody
 }
 
@@ -390,7 +390,7 @@ namespaceBody {
 	braces<memberDecl*>
 }
 
-classDecl[@name=Class] {
+classDecl[@name=Class, group=Declaration] {
 	dkw<'.class'> classAttr* dottedClassName typarsClause?
 	extendsClause? implClause?
 	classBody
@@ -495,7 +495,7 @@ classMemberDecl {
 }
 
 /* Field declaration */
-fieldDecl[@name=Field] {
+fieldDecl[@name=Field, group=Declaration] {
 	dkw<'.field'> repeatOpt? fieldAttr* type dottedFieldName
 	| dkw<'.field'> repeatOpt? fieldAttr* type dottedConstName atOpt initOpt?
 	| dkw<'.field'> repeatOpt? fieldAttr* type dottedConstName initOpt
@@ -514,7 +514,7 @@ fieldAttr[@name=FieldAttribute] {
 	| kw<'pinvokeimpl'> parens<compQstring pinvAttr>
 	| kw<'pinvokeimpl'> parens<pinvAttr>
 	</STRIP> */
-	| kw<'marshal'> parens<marshalBlob>
+	| marshalClause
 	| kw<'assembly'>
 	| kw<'famandassem'>
 	| kw<'famorassem'>
@@ -566,7 +566,7 @@ memberRef[@name=MemberRef] {
 }
 
 /* Event declaration */
-eventDecl[@name=Event] {
+eventDecl[@name=Event, group=Declaration] {
 	dkw<'.event'> eventAttr* typeSpec? dottedEventName eventBody
 }
 
@@ -591,7 +591,7 @@ eventMemberDecl {
 }
 
 /* Property declaration */
-propDecl[@name=Property] {
+propDecl[@name=Property, group=Declaration] {
 	dkw<'.property'> propAttr* callConv type dottedPropertyName methodArgs? initOpt? propBody
 }
 
@@ -615,7 +615,7 @@ propMemberDecl {
 }
 
 /* Method declaration */
-methodDecl[@name=Method] {
+methodDecl[@name=Method, group=Declaration] {
 	dkw<'.method'> methAttr* callConv paramAttr* type marshalClause? methodName typarsClause? methodArgs implAttr* methodBody
 }
 
@@ -766,7 +766,7 @@ handlerBlock {
 }
 
 /* Data declaration */
-dataDecl[@name=Data] {
+dataDecl[@name=Data, group=Declaration] {
 	dkw<'.data'> tls? (dataNameId '=')? ddBody
 }
 
@@ -915,7 +915,7 @@ objSeq {
 /* IL instructions and associated definitions */
 methodSpec { kw<'method'> }
 
-instr_none[@name=OpCode] {
+instr_none[@name=OpCode.None, group=OpCode] {
 	kw<'nop'>
 	| kw<'break'>
 	| kw<'ldarg'> '.' '0'
@@ -1067,7 +1067,7 @@ instr_none[@name=OpCode] {
 	| kw<'endmac'>
 }
 
-instr_var[@name=OpCode.Variable] {
+instr_var[@name=OpCode.Variable, group=OpCode] {
 	kw<'ldarg'> '.' 's'
 	| kw<'ldarga'> '.' 's'
 	| kw<'starg'> '.' 's'
@@ -1082,23 +1082,23 @@ instr_var[@name=OpCode.Variable] {
 	| kw<'stloc'>
 }
 
-instr_i[@name=OpCode.Int32] {
+instr_i[@name=OpCode.Int32, group=OpCode] {
 	kw<'ldc'> '.' 'i4' '.' 's'
 	| kw<'ldc'> '.' 'i4'
 	| kw<'unaligned'> '.'
 	| kw<'no'> '.'
 }
 
-instr_i8[@name=OpCode.Int64] {
+instr_i8[@name=OpCode.Int64, group=OpCode] {
 	kw<'ldc'> '.' 'i8'
 }
 
-instr_r[@name=OpCode.Real] {
+instr_r[@name=OpCode.Real, group=OpCode] {
 	kw<'ldc'> '.' 'r4'
 	| kw<'ldc'> '.' 'r8'
 }
 
-instr_brtarget[@name=OpCode.Branch] {
+instr_brtarget[@name=OpCode.Branch, group=OpCode] {
 	kw<'br'> '.' 's'
 	| kw<'brfalse'> '.' 's'
 	| kw<'brtrue'> '.' 's'
@@ -1129,7 +1129,7 @@ instr_brtarget[@name=OpCode.Branch] {
 	| kw<'leave'> '.' 's'
 }
 
-instr_method[@name=OpCode.Method] {
+instr_method[@name=OpCode.Method, group=OpCode] {
 	kw<'jmp'>
 	| kw<'call'>
 	| kw<'callvirt'>
@@ -1138,7 +1138,7 @@ instr_method[@name=OpCode.Method] {
 	| kw<'ldvirtftn'>
 }
 
-instr_field[@name=OpCode.Field] {
+instr_field[@name=OpCode.Field, group=OpCode] {
 	kw<'ldfld'>
 	| kw<'ldflda'>
 	| kw<'stfld'>
@@ -1147,7 +1147,7 @@ instr_field[@name=OpCode.Field] {
 	| kw<'stsfld'>
 }
 
-instr_type[@name=OpCode.Type] {
+instr_type[@name=OpCode.Type, group=OpCode] {
 	kw<'cpobj'>
 	| kw<'ldobj'>
 	| kw<'castclass'>
@@ -1167,19 +1167,19 @@ instr_type[@name=OpCode.Type] {
 	| kw<'sizeof'>
 }
 
-instr_string[@name=OpCode.String] {
+instr_string[@name=OpCode.String, group=OpCode] {
 	kw<'ldstr'>
 }
 
-instr_sig[@name=OpCode.Signature] {
+instr_sig[@name=OpCode.Signature, group=OpCode] {
 	kw<'calli'>
 }
 
-instr_tok[@name=OpCode.Token] {
+instr_tok[@name=OpCode.Token, group=OpCode] {
 	kw<'ldtoken'>
 }
 
-instr_switch[@name=OpCode.Switch] {
+instr_switch[@name=OpCode.Switch, group=OpCode] {
 	kw<'switch'>
 }
 
@@ -1389,7 +1389,7 @@ bound {
 }
 
 /* Security declarations */
-secDecl[@name=Security] {
+secDecl[@name=Security, group=Declaration] {
 	dkw<'.permission'> secAction typeSpec parens<nameValPairs>
 	| dkw<'.permission'> secAction typeSpec '=' braces<customBlobDescr>
 	| dkw<'.permission'> secAction typeSpec
@@ -1467,7 +1467,7 @@ extSourceSpec {
 }
 
 /* Manifest declarations */
-fileDecl[@name=File] {
+fileDecl[@name=File, group=Declaration] {
 	dkw<'.file'> fileAttr* dottedName fileEntry? (dkw<'.hash'> '=' bytesDelim fileEntry)?
 }
 
@@ -1479,7 +1479,7 @@ fileEntry {
 	dkw<'.entrypoint'>
 }
 
-assemblyDecl[@name=Assembly] {
+assemblyDecl[@name=Assembly, group=Declaration] {
 	dkw<'.assembly'> asmAttr* dottedAssemblyName assemblyBody?
 }
 
@@ -1510,7 +1510,7 @@ intOrWildcard {
 	| '*'
 }
 
-asmOrRefDecl[@name=AsmOrReference] {
+asmOrRefDecl[@name=AsmOrReference, group=Declaration] {
 	dkw<'.publickey'> '=' bytesDelim
 	| dkw<'.ver'> intOrWildcard ':' intOrWildcard ':' intOrWildcard ':' intOrWildcard
 	| dkw<'.locale'> compQstring
@@ -1519,7 +1519,7 @@ asmOrRefDecl[@name=AsmOrReference] {
 	| compControl
 }
 
-assemblyRefDecl[@name=AssemblyReference] {
+assemblyRefDecl[@name=AssemblyReference, group=Declaration] {
 	dkw<'.assembly'> kw<'extern'> asmAttr* dottedAssemblyName (kw<'as'> dottedName)? assemblyRefBody?
 }
 
@@ -1534,11 +1534,11 @@ assemblyRefMemberDecl {
 	| kw<'auto'>
 }
 
-exptypeDecl[@name=ExportType] {
+exptypeDecl[@name=ExportType, group=Declaration] {
 	dkw<'.class'> kw<'extern'> exptAttr* dottedName exptypeBody
 }
 
-exportDecl[@name=Export] {
+exportDecl[@name=Export, group=Declaration] {
 	dkw<'.export'> exptAttr* dottedName exptypeBody /* deprecated */
 }
 
@@ -1568,7 +1568,7 @@ exptypeMemberDecl {
 	| compControl
 }
 
-manifestResDecl[@name=ManifestResource] {
+manifestResDecl[@name=ManifestResource, group=Declaration] {
 	dkw<'.mresource'> manresAttr* dottedName (kw<'as'> dottedName)? manifestResBody
 }
 

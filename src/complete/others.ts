@@ -17,6 +17,7 @@ export function marshalClauseBody(node: SyntaxNode, context: CompletionContext) 
         if (code === "safearray") {
             return getCompletion(node.from, variantType);
         }
+        return getCompletion(prevSibling.from, nativeType);
     }
     else {
         const prevSibling = node.parent?.prevSibling;
