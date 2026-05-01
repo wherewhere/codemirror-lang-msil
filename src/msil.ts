@@ -2,6 +2,7 @@ import { parser } from "./syntax.grammar";
 import {
     LRLanguage,
     LanguageSupport,
+    LanguageDescription,
     indentNodeProp,
     foldNodeProp,
     foldInside,
@@ -81,4 +82,13 @@ export function msil({ tooltip }: Options = {}) {
         }),
         msilTooltip(tooltip?.render, tooltip?.options)
     ]);
+}
+
+export function msilData(options?: Options) {
+    return LanguageDescription.of({
+        name: "IL",
+        alias: ["msil", "cil"],
+        extensions: ["il"],
+        support: msil(options)
+    });
 }
