@@ -107,8 +107,14 @@ function getAttrCompletion(node: SyntaxNode, parent: SyntaxNode | null, context:
     }
 }
 
+/** The options for configuring MSIL completion. */
 export type CompletionOptions = object;
 
+/**
+ * The MSIL completion.
+ * @param context - The completion context provided by CodeMirror, containing information about the current state of the editor and the position of the cursor.
+ * @returns The completion result based on the current context in the MSIL code.
+ */
 export function msilCompletion(context: CompletionContext) {
     if (context.aborted) { return; }
     const tree = syntaxTree(context.state);

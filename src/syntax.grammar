@@ -297,7 +297,7 @@ typedefDecl[@name=TypeDefine, group=Declaration] {
 }
 
 /* Compilation control directives are processed within yylex(), displayed here just for grammar completeness */
-compControl	{
+compControl {
 	P_DEFINE dottedMacroName
 	| P_DEFINE dottedMacroName compQstring
 	| P_UNDEF dottedMacroName
@@ -354,7 +354,7 @@ serializType {
 	simpleType
 	| kw<'type'>
 	| kw<'object'>
- 	| kw<'enum'> kw<'class'> SQSTRING
+	| kw<'enum'> kw<'class'> SQSTRING
 	| kw<'enum'> className
 	| serializType '[' ']'
 }
@@ -486,11 +486,11 @@ classMemberDecl {
 	| dkw<'.pack'> int32
 	| exportDecl
 	| dkw<'.override'> typeSpec '::' methodName kw<'with'> callConv type typeSpec '::' methodName methodArgs
-	| dkw<'.override'> kw<'method'> callConv type typeSpec '::' methodName genArity methodArgs kw<'with'> kw<'method'> callConv type typeSpec '::' methodName genArity delim<sigArgs0>
+	| dkw<'.override'> kw<'method'> callConv type typeSpec '::' methodName genArity methodArgs kw<'with'> kw<'method'> callConv type typeSpec '::' methodName genArity methodArgs
 	| languageDecl
 	| compControl
-	| dkw<'.param'> kw<'type'> (('[' int32 ']') | dottedArgumentName)
-	| dkw<'.param'> kw<'constraint'> (('[' int32 ']') | dottedArgumentName) ',' typeSpec
+	| dkw<'.param'> kw<'type'> (brackets<int32> | dottedArgumentName)
+	| dkw<'.param'> kw<'constraint'> (brackets<int32> | dottedArgumentName) ',' typeSpec
 	| dkw<'.interfaceimpl'> kw<'type'> typeSpec customDescr
 }
 
@@ -725,8 +725,8 @@ methodMemberDecl {
 
 	| dkw<'.override'> kw<'method'> callConv type typeSpec '::' methodName genArity methodArgs
 	| scopeBlock
-	| dkw<'.param'> kw<'type'> ('[' int32 ']' | dottedArgumentName)
-	| dkw<'.param'> kw<'constraint'> ('[' int32 ']' | dottedArgumentName) ',' typeSpec
+	| dkw<'.param'> kw<'type'> (brackets<int32> | dottedArgumentName)
+	| dkw<'.param'> kw<'constraint'> (brackets<int32> | dottedArgumentName) ',' typeSpec
 
 	| dkw<'.param'> brackets<int32> initOpt
 }
@@ -1212,7 +1212,7 @@ labels {
 }
 
 /* Signatures */
-tyArgs0 { ('<' tyArgs1 '>')? }
+tyArgs0 { chevrons<tyArgs1>? }
 
 tyArgs1 { tyArgs2 }
 
@@ -1252,8 +1252,8 @@ typeSpec[@name=TypeSpec] {
 /*  Native types for marshaling signatures  */
 nativeType {
 	kw<'custom'> parens<compQstring ',' compQstring (',' compQstring ',' compQstring)?>
-	| kw<'fixed'> kw<'sysstring'> delim<'[' int32 ']'>
-	| kw<'fixed'> kw<'array'> delim<'[' int32 ']'>
+	| kw<'fixed'> kw<'sysstring'> brackets<int32>
+	| kw<'fixed'> kw<'array'> brackets<int32>
 	| kw<'variant'>
 	| kw<'currency'>
 	| kw<'syschar'>
@@ -1593,11 +1593,11 @@ manifestResMemberDecl {
 kw<word> { @specialize[@name=Keyword]<identifier, word> }
 dkw<word> { @specialize[@name=Keyword]<dotIdentifier, word> }
 null<word> { @specialize[@name=NullLiteral]<identifier, word> }
-delim<contents> { delim[@name=Delim] { contents } }
-braces<contents> { delim<'{' contents '}'> }
-brackets<contents> { delim<'[' contents ']'> }
-parens<contents> { delim<'(' contents ')'> }
-chevrons<contents> { delim<'<' contents '>'> }
+delim<contents, group> { delim[@name=Delim, group={group}] { contents } }
+braces<contents> { delim<'{' contents '}', 'Braces'> }
+brackets<contents> { delim<'[' contents ']', 'Brackets'> }
+parens<contents> { delim<'(' contents ')', 'Parens'> }
+chevrons<contents> { delim<'<' contents '>', 'Chevrons'> }
 sep1<rule, by> { rule (by rule)* }
 csep1<rule> { sep1<rule, !comma ','> }
 csep0<rule> { csep1<rule>? }

@@ -1,6 +1,6 @@
 import type { Text } from "@codemirror/state";
 import type { SyntaxNode, Tree } from "@lezer/common";
-import type { EditorView } from "@codemirror/view";
+import type { Command, EditorView } from "@codemirror/view";
 import { indentUnit as indentUnitFacet, syntaxTree } from "@codemirror/language";
 
 const OPEN_CHARS = [123, 40, 91, 60];   // { ( [ <
@@ -56,11 +56,18 @@ function shouldIncreaseIndentOnLineBreak(source: Text, offset: number, tree: Tre
     return true;
 }
 
+/** The options for configuring MSIL support. */
 export type FormatOptions = {
+    /** The string unit used for indentation. Defaults to the editor's configured indent unit. */
     indentUnit?: string
 };
 
 const CLOSE_CHARS = [125, 41, 93, 62];  // } ) ] >
+
+/**
+ * Gets MSIL formatter.
+ * @returns A {@link Command} instance for formatting MSIL code.
+ */
 export function msilFormatter({ indentUnit }: FormatOptions = {}) {
     return function (target: EditorView) {
         const state = target.state;

@@ -10,13 +10,17 @@ import {
 } from "@codemirror/language";
 import { styleTags, tags } from "@lezer/highlight";
 
+/** A language provider for C#. */
 export const msilLanguage = LRLanguage.define({
     parser: parser.configure({
         props: [
             indentNodeProp.add({
                 Instrction: continuedIndent(),
                 Declaration: continuedIndent({ except: /^\s*{/ }),
-                Delim: continuedIndent({ except: /^\s*[\)\]\}]/ }),
+                Braces: continuedIndent({ except: /^\s*[\}]/ }),
+                Brackets: continuedIndent({ except: /^\s*[\]]/ }),
+                Parens: continuedIndent({ except: /^\s*[\)]/ }),
+                Chevrons: continuedIndent({ except: /^\s*[\>]/ }),
                 SEHBlock: continuedIndent({ except: /^\s*({|(catch|filter|finally|fault)\b)/ })
             }),
             foldNodeProp.add({
@@ -63,18 +67,25 @@ export const msilLanguage = LRLanguage.define({
     languageData: {
         commentTokens: { line: "//", block: { open: "/*", close: "*/" } },
         closeBrackets: { brackets: ['(', '[', '{', '"', '\'', '<'] },
-        indentOnInput: /^\s*([\)\]\}]$|(catch|filter|finally|fault)\b)/
+        indentOnInput: /^\s*([\>\)\]\}]$|(catch|filter|finally|fault)\b)/
     }
 });
 
 import { msilCompletion, type CompletionOptions } from "./complete";
 import { msilTooltip, type TooltipOptions } from "./tooltip";
 
+/** The options for configuring MSIL support. */
 export type Options = {
+    /** The autocomplete options. */
     autocomplete?: CompletionOptions,
+    /** The tooltip options. */
     tooltip?: TooltipOptions
 };
 
+/**
+ * Gets MSIL support. Includes {@link msilCompletion} and {@link msilTooltip}.
+ * @returns A {@link LanguageSupport} instance for MSIL.
+ */
 export function msil({ tooltip }: Options = {}) {
     return new LanguageSupport(msilLanguage, [
         msilLanguage.data.of({
@@ -84,6 +95,11 @@ export function msil({ tooltip }: Options = {}) {
     ]);
 }
 
+/**
+ * Gets MSIL language description.
+ * @param options - The language options, including autocomplete and tooltip options.
+ * @return A {@link LanguageDescription} instance for MSIL.
+ */
 export function msilData(options?: Options) {
     return LanguageDescription.of({
         name: "IL",
