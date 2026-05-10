@@ -121,15 +121,15 @@
 
 	// General
 
-	P_DEFINE[@name=PP_Directive] { '#define' }
-	P_UNDEF[@name=PP_Directive] { '#undef' }
-	P_IFDEF[@name=PP_Directive] { '#ifdef' }
-	P_IFNDEF[@name=PP_Directive] { '#ifndef' }
-	P_ELSE[@name=PP_Directive] { '#else' }
-	P_ENDIF[@name=PP_Directive] { '#endif' }
-	P_INCLUDE[@name=PP_Directive] { '#include' }
+	P_DEFINE[group=PP_Directive] { '#define' }
+	P_UNDEF[group=PP_Directive] { '#undef' }
+	P_IFDEF[group=PP_Directive] { '#ifdef' }
+	P_IFNDEF[group=PP_Directive] { '#ifndef' }
+	P_ELSE[group=PP_Directive] { '#else' }
+	P_ENDIF[group=PP_Directive] { '#endif' }
+	P_INCLUDE[group=PP_Directive] { '#include' }
 
-	P_LINE[@name=PP_Directive] { '#line' }
+	P_LINE[group=PP_Directive] { '#line' }
 }
 
 // General
@@ -258,10 +258,6 @@ dottedFieldName[@name=FieldName] {
 }
 
 dottedConstName[@name=ConstName] {
-	dottedNameBase
-}
-
-dottedMethodName[@name=MethodName] {
 	dottedNameBase
 }
 
@@ -671,7 +667,7 @@ marshalBlob[@name=MarshalBlob] {
 methodName[@name=MethodName] {
 	dkw<'.ctor'>
 	| dkw<'.cctor'>
-	| dottedMethodName
+	| dottedNameBase
 }
 
 paramAttr[@name=ParameterAttribute] {
@@ -1593,7 +1589,7 @@ manifestResMemberDecl {
 kw<word> { @specialize[@name=Keyword]<identifier, word> }
 dkw<word> { @specialize[@name=Keyword]<dotIdentifier, word> }
 null<word> { @specialize[@name=NullLiteral]<identifier, word> }
-delim<contents, group> { delim[@name=Delim, group={group}] { contents } }
+delim<contents, name> { delim[@name={name}, group=Delim] { contents } }
 braces<contents> { delim<'{' contents '}', 'Braces'> }
 brackets<contents> { delim<'[' contents ']', 'Brackets'> }
 parens<contents> { delim<'(' contents ')', 'Parens'> }

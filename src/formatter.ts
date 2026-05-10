@@ -5,7 +5,7 @@ import { indentUnit as indentUnitFacet, syntaxTree } from "@codemirror/language"
 
 const OPEN_CHARS = [123, 40, 91, 60];   // { ( [ <
 function isDelim(node: SyntaxNode, source: Text) {
-    if (node.name !== "Delim") {
+    if (node.type.is("Delim")) {
         return false;
     }
 
@@ -33,9 +33,9 @@ function getDepth(source: Text, offset: number, tree: Tree) {
 
 function shouldIncreaseIndentOnLineBreak(source: Text, offset: number, tree: Tree, trimmed: string) {
     let node = tree.resolveInner(offset, 1);
-    if (!node.parent || node.name === "Delim") { return false; }
+    if (!node.parent || node.type.is("Delim")) { return false; }
 
-    while (node.parent.name !== "Delim") {
+    while (!node.parent.type.is("Delim")) {
         const temp = node;
         node = node.parent;
         if (!node.parent) {
@@ -43,7 +43,7 @@ function shouldIncreaseIndentOnLineBreak(source: Text, offset: number, tree: Tre
             break;
         }
     }
-    if (node.name === "Delim") { return false; }
+    if (node.type.is("Delim")) { return false; }
 
     const currentLine = source.lineAt(offset).number;
     const startLine = source.lineAt(node.from).number;

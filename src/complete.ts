@@ -33,7 +33,27 @@ function getAttrCompletion(node: SyntaxNode, parent: SyntaxNode | null, context:
         case "Property":
             return propAttrBody(node);
         case "Method":
-            return methodAttrBody(node);
+            switch (node.name) {
+                case "MethodName":
+                    switch (node.prevSibling?.name) {
+                        case "Type":
+                            const prevSibling = node.prevSibling;
+                            if (prevSibling.lastChild?.name === '⚠') {
+                                return getCompletion(prevSibling.from, typeOptions);
+                            }
+                            else {
+                                return getCompletion(node.from, [{
+                                    label: marshal,
+                                    type: keyword
+                                }]);
+                            }
+                        case "MarshalClause":
+                            return marshalClauseBody(node, context);
+                    }
+                    break;
+                default:
+                    return methodAttrBody(node);
+            }
         case "Data":
             return dataAttrBody(node);
         case "Security":
@@ -56,32 +76,15 @@ function getAttrCompletion(node: SyntaxNode, parent: SyntaxNode | null, context:
             return manifestResAttrBody(node);
         case "Type":
             return getCompletion(parent.from, typeOptions);
-        case "MethodName":
-            switch (parent.prevSibling?.name) {
-                case "Type":
-                    const prevSibling = parent.prevSibling;
-                    if (prevSibling.lastChild?.name === '⚠') {
-                        return getCompletion(prevSibling.from, typeOptions);
-                    }
-                    else {
-                        return getCompletion(node.from, [{
-                            label: marshal,
-                            type: keyword
-                        }]);
-                    }
-                case "MarshalClause":
-                    return marshalClauseBody(node, context);
-            }
-            break;
         case "InitOption":
             return initOptionBody(node);
         case "SignatureArgument":
             return sigArgsBody(node, context);
         case "MarshalBlob":
             return marshalClauseBody(node, context);
-        case "Delim":
-            const grand = parent.parent;
-            if (grand) {
+        case "Braces":
+            if (parent.parent) {
+                const grand = parent.parent;
                 switch (grand.name) {
                     case "Class":
                         return classBodyAttrBody(node, context);
@@ -90,17 +93,31 @@ function getAttrCompletion(node: SyntaxNode, parent: SyntaxNode | null, context:
                         return methodScopeBlock(node, context);
                     case "Data":
                         return dataBody(node.from);
+                    case "ParameterAttribute":
+                        return paramAttrBody(node);
+                    case "Assembly":
+                        return assemblyBodyAttrBody(node, context);
+                }
+            }
+            break;
+        case "Parens":
+            if (parent.parent) {
+                const grand = parent.parent;
+                switch (grand.name) {
                     case "MethodArguments":
                     case "LocalVariables":
                         return sigArgsBody(node, context);
                     case "MarshalClause":
                         return marshalClauseBody(node, context);
+                }
+            }
+            break;
+        case "Chevrons":
+            if (parent.parent) {
+                const grand = parent.parent;
+                switch (grand.name) {
                     case "TypeParametersClause":
                         return typeParamBody(node, context);
-                    case "ParameterAttribute":
-                        return paramAttrBody(node);
-                    case "Assembly":
-                        return assemblyBodyAttrBody(node, context);
                 }
             }
             break;

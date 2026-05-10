@@ -22,7 +22,7 @@ export function marshalClauseBody(node: SyntaxNode, context: CompletionContext) 
     else {
         const prevSibling = node.parent?.prevSibling;
         if (prevSibling?.name === "MarshalClause") {
-            const delim = node.parent?.prevSibling?.getChild("Delim");
+            const delim = node.parent?.prevSibling?.getChild("Parens");
             if (delim) {
                 const keyword = delim.getChild("MarshalBlob")?.lastChild;
                 if (keyword) {

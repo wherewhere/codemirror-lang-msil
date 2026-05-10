@@ -25,7 +25,7 @@ export const msilLanguage = LRLanguage.define({
             }),
             foldNodeProp.add({
                 Delim: foldInside,
-                BlockComment(tree) { return { from: tree.from + 2, to: tree.to - 2 } }
+                BlockComment(node) { return { from: node.from + 2, to: node.to - 2 } }
             }),
             styleTags({
                 "Keyword SimpleType": tags.keyword,
