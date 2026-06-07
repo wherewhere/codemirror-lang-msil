@@ -17,10 +17,10 @@ export const msilLanguage = LRLanguage.define({
             indentNodeProp.add({
                 Instrction: continuedIndent(),
                 Declaration: continuedIndent({ except: /^\s*{/ }),
-                Braces: continuedIndent({ except: /^\s*[\}]/ }),
-                Brackets: continuedIndent({ except: /^\s*[\]]/ }),
-                Parens: continuedIndent({ except: /^\s*[\)]/ }),
-                Chevrons: continuedIndent({ except: /^\s*[\>]/ }),
+                Braces: continuedIndent({ except: /^\s*}/ }),
+                Brackets: continuedIndent({ except: /^\s*]/ }),
+                Parens: continuedIndent({ except: /^\s*\)/ }),
+                Chevrons: continuedIndent({ except: /^\s*>/ }),
                 SEHBlock: continuedIndent({ except: /^\s*({|(catch|filter|finally|fault)\b)/ })
             }),
             foldNodeProp.add({
@@ -33,7 +33,7 @@ export const msilLanguage = LRLanguage.define({
                 NullLiteral: tags.null,
                 "IntegerLiteral ByteLiteral": tags.integer,
                 RealLiteral: tags.float,
-                'QSTRING SQSTRING': tags.string,
+                "QSTRING SQSTRING": tags.string,
                 LineComment: tags.lineComment,
                 BlockComment: tags.blockComment,
 
@@ -67,7 +67,7 @@ export const msilLanguage = LRLanguage.define({
     languageData: {
         commentTokens: { line: "//", block: { open: "/*", close: "*/" } },
         closeBrackets: { brackets: ['(', '[', '{', '"', '\'', '<'] },
-        indentOnInput: /^\s*([\>\)\]\}]$|(catch|filter|finally|fault)\b)/
+        indentOnInput: /^\s*([>)\]}]$|(catch|filter|finally|fault)\b)/
     }
 });
 

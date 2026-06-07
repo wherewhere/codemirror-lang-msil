@@ -58,7 +58,7 @@
   "devDependencies": {
     "@codemirror/buildhelper": "^1.0.0",
     "@codemirror/theme-one-dark": "^6.0.0",
-    "@types/node": "^25.6.0",
+    "@types/node": "^25.0.0",
     "@vitejs/plugin-legacy": "^8.0.0",
     "codemirror": "^6.0.0",
     "lz-string": "^1.0.0",
