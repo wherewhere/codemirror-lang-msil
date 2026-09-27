@@ -37,7 +37,15 @@
 <body>
     <div class="split-view">
         <div id="editor"></div>
-        <div id="syntax"></div>
+        <div class="output">
+            <input id="checkbox" type="checkbox" />
+            <label class="checkbox-label" for="checkbox">
+                <span class="syntax">Syntax</span>
+                <span class="definition">Definition</span>
+            </label>
+            <div id="syntax"></div>
+            <div id="definition"></div>
+        </div>
     </div>
 </body>
 

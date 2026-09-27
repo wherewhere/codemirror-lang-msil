@@ -30,20 +30,21 @@ div.split-view>*:not(:last-child) {
 }
 
 div.split-view #editor,
-div.split-view #syntax {
+div.split-view .output {
     display: flex;
     width: 50%;
     overflow: auto;
+    flex-direction: column;
 }
 
-div.split-view #editor .cm-editor,
-div.split-view #syntax pre {
+div.split-view #editor .cm-editor {
     flex: 1;
     outline: none;
     overflow: inherit;
 }
 
-div.split-view #syntax pre {
+div.split-view .output pre {
+    flex: 1;
     margin: 0;
     padding: 4px 2px 4px 6px;
 }
@@ -54,7 +55,7 @@ div.split-view #syntax pre {
     }
 
     div.split-view #editor,
-    div.split-view #syntax {
+    div.split-view .output {
         width: 100%;
         height: 50%;
     }
@@ -62,6 +63,51 @@ div.split-view #syntax pre {
     div.split-view>*:not(:last-child) {
         margin-bottom: 0.3rem;
     }
+}
+
+div.split-view .output {
+    position: relative;
+}
+
+div.split-view .output #checkbox {
+    position: absolute;
+    top: 4px;
+    right: 2px;
+}
+
+div.split-view .output .checkbox-label {
+    position: absolute;
+    top: 3px;
+    right: 24px;
+    font-size: 12px;
+    color: #abb2bf;
+    line-height: 20px;
+}
+
+div.split-view .output #checkbox:checked+.checkbox-label .syntax,
+div.split-view .output #checkbox+.checkbox-label .definition {
+    display: none;
+}
+
+div.split-view .output #checkbox+.checkbox-label .syntax,
+div.split-view .output #checkbox:checked+.checkbox-label .definition {
+    display: inline;
+}
+
+div.split-view .output #syntax,
+div.split-view .output #definition {
+    flex: 1;
+}
+
+div.split-view .output #checkbox:checked~#syntax,
+div.split-view .output #checkbox~#definition {
+    display: none;
+}
+
+div.split-view .output #checkbox~#syntax,
+div.split-view .output #checkbox:checked~#definition {
+    display: flex;
+    flex-direction: column;
 }
 
 .cm-completionInfo,

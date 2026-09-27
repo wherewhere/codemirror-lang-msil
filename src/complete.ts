@@ -215,3 +215,5 @@ export function msilCompletion(context: CompletionContext) {
         return getAttrCompletion(node, node.parent, context);
     }
 }
+
+export * from "./complete/definition";

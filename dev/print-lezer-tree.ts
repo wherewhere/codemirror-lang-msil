@@ -1,7 +1,7 @@
 // From: https://gist.github.com/msteen/e4828fbf25d6efef73576fc43ac479d2/
 
 import { Text } from "@codemirror/state"
-import { Input, NodeType, SyntaxNode, Tree, TreeCursor } from "@lezer/common"
+import { type Input, type NodeType, type SyntaxNode, type Tree, TreeCursor } from "@lezer/common"
 
 class StringInput implements Input {
     constructor(private readonly input: string) { }

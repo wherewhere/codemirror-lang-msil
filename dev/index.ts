@@ -1,10 +1,11 @@
 import { EditorState } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
 import { basicSetup } from 'codemirror';
-import { indentUnit } from '@codemirror/language';
+import { indentUnit, syntaxTree } from '@codemirror/language';
 import { indentWithTab } from '@codemirror/commands';
-import { msil, parser, msilFormatter } from '../dist/';
+import { getCurrentAssembly, msil, msilFormatter } from '../dist';
 import { printTree } from './print-lezer-tree';
+import { printAssembly } from './print-definition';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
 
@@ -80,6 +81,9 @@ const doc = getCodeFromHash() || `.assembly _
 const syntax = document.createElement('pre');
 syntax.className = 'ͼo';
 document.getElementById('syntax')!.appendChild(syntax);
+const definition = document.createElement('pre');
+definition.className = 'ͼo';
+document.getElementById('definition')!.appendChild(definition);
 
 function setTimeoutAsync(timeout?: number) {
     return new Promise<void>(resolve => setTimeout(resolve, timeout));
@@ -110,7 +114,8 @@ const editor = new EditorView({
                     try {
                         count++;
                         const doc = e.state.doc.toString();
-                        syntax.textContent = printTree(parser.parse(doc), doc);
+                        syntax.textContent = printTree(syntaxTree(e.state), doc);
+                        definition.textContent = printAssembly(getCurrentAssembly(e.state));
                         await setTimeoutAsync(500);
                         if (count != 0) { return; }
                         location.hash = compressToEncodedURIComponent(doc);
@@ -126,7 +131,8 @@ const editor = new EditorView({
     parent: document.querySelector('#editor')!,
 });
 
-syntax.textContent = printTree(parser.parse(doc), doc);
+syntax.textContent = printTree(syntaxTree(editor.state), doc);
+definition.textContent = printAssembly(getCurrentAssembly(editor.state));
 addEventListener('hashchange', () => {
     if (hashChanged) {
         hashChanged = false;
