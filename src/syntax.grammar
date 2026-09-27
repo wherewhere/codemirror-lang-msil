@@ -253,11 +253,11 @@ dottedArgumentName[@name=ArgumentName] {
 	dottedNameBase
 }
 
-dottedFieldName[@name=FieldName] {
+dottedFieldName[@name=FieldName, group=FieldOrConstName] {
 	dottedNameBase
 }
 
-dottedConstName[@name=ConstName] {
+dottedConstName[@name=ConstName, group=FieldOrConstName] {
 	dottedNameBase
 }
 

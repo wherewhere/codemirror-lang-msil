@@ -1,48 +1,35 @@
-import type { Assembly, Namespace, Class, Field, Method } from "../dist";
+import type { Symbol, MemberBase, Assembly } from "../dist";
 
 type DefinitionNode = {
     label: string;
     children: DefinitionNode[];
 };
 
-function typeParameters(parameters: string[]) {
-    return parameters.length ? `<${parameters.join(", ")}>` : "";
+interface IHasMembers {
+    members?: Record<string, MemberBase<Symbol>[]>;
 }
 
-function fieldNode(field: Field): DefinitionNode {
-    return {
-        label: `Field ${field.name}: ${field.type}`,
-        children: []
-    };
+function* readMembers(members?: Record<string, MemberBase<Symbol>[]>) {
+    if (typeof members === "object") {
+        for (const key in members) {
+            const member = members[key];
+            if (Array.isArray(member)) {
+                for (const item of member) {
+                    yield createNode(item);
+                }
+            }
+        }
+    }
 }
 
-function methodNode(method: Method): DefinitionNode {
-    return {
-        label: `Method ${method.name}${typeParameters(method.typeParameters)}(${method.parameters.join(", ")}): ${method.returnType}`,
-        children: []
-    };
+function isIHasMembers(symbol: Symbol): symbol is Symbol & IHasMembers {
+    return "members" in symbol;
 }
 
-function classNode($class: Class): DefinitionNode {
+function createNode(symbol: Symbol): DefinitionNode {
     return {
-        label: `Class ${$class.name}${typeParameters($class.typeParameters)}`,
-        children: [
-            ...$class.fields.map(fieldNode),
-            ...$class.methods.map(methodNode),
-            ...$class.classes.map(classNode)
-        ]
-    };
-}
-
-function namespaceNode(namespace: Namespace): DefinitionNode {
-    return {
-        label: `Namespace ${namespace.name}`,
-        children: [
-            ...namespace.fields.map(fieldNode),
-            ...namespace.methods.map(methodNode),
-            ...namespace.classes.map(classNode),
-            ...namespace.namespaces.map(namespaceNode)
-        ]
+        label: symbol.toString(),
+        children: isIHasMembers(symbol) ? [...readMembers(symbol.members)] : []
     };
 }
 
@@ -53,16 +40,8 @@ function appendNode(lines: string[], node: DefinitionNode, prefix: string, last:
 }
 
 export function printAssembly(assembly: Assembly) {
-    const root: DefinitionNode = {
-        label: `Assembly ${assembly.name || "<unnamed>"}`,
-        children: [
-            ...assembly.namespaces.map(namespaceNode),
-            ...assembly.fields.map(fieldNode),
-            ...assembly.methods.map(methodNode),
-            ...assembly.classes.map(classNode)
-        ]
-    };
+    const root: DefinitionNode = createNode(assembly);
     const lines = [root.label];
-    root.children.forEach((child, index) => appendNode(lines, child, "", index === root.children.length - 1));
-    return lines.join("\n");
+    root.children.forEach((child, index) => appendNode(lines, child, '', index === root.children.length - 1));
+    return lines.join('\n');
 }
