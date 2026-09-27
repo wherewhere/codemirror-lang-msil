@@ -15,6 +15,24 @@ export class Field extends Member<FieldOwner, "field"> {
         owner?: FieldOwner) {
         super("field", name, isStatic, accessModifier, owner);
     }
+
+    get fullyQualifiedName() {
+        let result = this.name;
+        const owner = this.owner;
+        if (owner) {
+            switch (owner.kind) {
+                case "class":
+                    result = `${owner.fullyQualifiedName}::${result}`;
+                    break;
+                case "namespace":
+                    // For now the .namespace will not effect the name of fields and methods
+                    // result = `${owner.fullyQualifiedName}.${result}`;
+                    break;
+            }
+        }
+        return result;
+    }
+
     override toString() {
         let results = '';
         if (this.accessibility) {
@@ -26,6 +44,14 @@ export class Field extends Member<FieldOwner, "field"> {
         if (this.isLiteral) {
             results += "literal ";
         }
-        return results += `${this.type} ${this.name}`;
+        return `${results}${this.type} ${this.name}`;
+    }
+
+    toFullyQualifiedString() {
+        let results = '';
+        if (!this.isStatic) {
+            results += "instance ";
+        }
+        return `${results}${this.type} ${this.fullyQualifiedName}`;
     }
 }

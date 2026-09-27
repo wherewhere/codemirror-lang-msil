@@ -28,7 +28,7 @@ function createAssembly(node: SyntaxNode | null, doc: Text) {
             return new Assembly(name);
         }
     }
-    return new Assembly("<unnamed>");
+    return new Assembly(undefined!);
 }
 
 function getNamespaceMembers(node: SyntaxNode | null, doc: Text, owner?: Assembly | Namespace) {
@@ -52,7 +52,7 @@ function createNamespace(node: SyntaxNode | null, doc: Text, owner?: Assembly | 
             return $namespace;
         }
     }
-    return new Namespace("<unnamed>", owner);
+    return new Namespace(undefined!, owner);
 }
 
 function createTypeParameters(node: SyntaxNode | null, doc: Text) {

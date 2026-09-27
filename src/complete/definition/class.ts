@@ -13,6 +13,7 @@ type ClassMembers = {
 
 export class Class extends GenericMember<ClassOwner, "class"> {
     members?: ClassMembers;
+
     constructor(
         name: string,
         isAbstract: boolean,
@@ -22,6 +23,28 @@ export class Class extends GenericMember<ClassOwner, "class"> {
         owner?: ClassOwner) {
         super("class", name, isSealed && isAbstract, isAbstract, accessibility, typeParameters, owner);
     }
+
+    get fullyQualifiedName() {
+        let result = this.name;
+        const owner = this.owner;
+        if (owner) {
+            switch (owner.kind) {
+                case "class":
+                    result = `${owner.fullyQualifiedName}/${result}`;
+                    break;
+                case "namespace":
+                    result = `${owner.fullyQualifiedName}.${result}`;
+                    break;
+                case "assembly":
+                    if (owner.name) {
+                        result = `[${owner.name}]${result}`;
+                    }
+                    break;
+            }
+        }
+        return result;
+    }
+
     override toString() {
         let results = '';
         if (this.accessibility) {
@@ -34,6 +57,14 @@ export class Class extends GenericMember<ClassOwner, "class"> {
             results += "sealed ";
         }
         results += `class ${this.name}`;
+        if (this.typeParameters) {
+            results += `<${this.typeParameters.join(", ")}>`;
+        }
+        return results;
+    }
+
+    toFullyQualifiedString() {
+        let results = this.fullyQualifiedName;
         if (this.typeParameters) {
             results += `<${this.typeParameters.join(", ")}>`;
         }

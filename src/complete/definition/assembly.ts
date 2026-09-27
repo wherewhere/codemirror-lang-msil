@@ -17,6 +17,6 @@ export class Assembly extends Symbol<"assembly"> {
         super("assembly", name);
     }
     override toString() {
-        return `assembly ${this.name}`;
+        return `assembly ${this.name || "<unnamed>"}`;
     }
 }

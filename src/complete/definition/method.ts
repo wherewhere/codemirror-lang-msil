@@ -19,6 +19,24 @@ export class Method extends GenericMember<MethodOwner, "method"> {
         owner?: MethodOwner) {
         super("method", name, isStatic, isAbstract, accessModifier, typeParameters, owner);
     }
+
+    get fullyQualifiedName() {
+        let result = this.name;
+        const owner = this.owner;
+        if (owner) {
+            switch (owner.kind) {
+                case "class":
+                    result = `${owner.fullyQualifiedName}::${result}`;
+                    break;
+                case "namespace":
+                    // For now the .namespace will not effect the name of fields and methods
+                    // result = `${owner.fullyQualifiedName}.${result}`;
+                    break;
+            }
+        }
+        return result;
+    }
+
     override toString() {
         let results = '';
         if (this.accessibility) {
@@ -40,6 +58,18 @@ export class Method extends GenericMember<MethodOwner, "method"> {
         if (this.typeParameters) {
             results += `<${this.typeParameters.join(", ")}>`;
         }
-        return results + `(${this.parameters.join(", ")})`;
+        return `${results}(${this.parameters.join(", ")})`;
+    }
+
+    toFullyQualifiedString() {
+        let results = '';
+        if (!this.isStatic) {
+            results += "instance ";
+        }
+        results += `${this.returnType} ${this.fullyQualifiedName}`;
+        if (this.typeParameters) {
+            results += `<${this.typeParameters.join(", ")}>`;
+        }
+        return `${results}(${this.parameters.join(", ")})`;
     }
 }
