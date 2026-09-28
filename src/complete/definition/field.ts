@@ -2,10 +2,11 @@ import { Member, type Accessibility } from "./member";
 import type { Assembly } from "./assembly";
 import type { Namespace } from "./namespace";
 import type { Class } from "./class";
+import type { IHasFullyQualifiedString } from "./constraints";
 
 type FieldOwner = Assembly | Namespace | Class;
 
-export class Field extends Member<FieldOwner, "field"> {
+export class Field extends Member<FieldOwner, "field"> implements IHasFullyQualifiedString {
     constructor(
         name: string,
         isStatic: boolean,

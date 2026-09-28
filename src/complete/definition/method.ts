@@ -2,10 +2,11 @@ import { GenericMember, type Accessibility } from "./member";
 import type { Assembly } from "./assembly";
 import type { Namespace } from "./namespace";
 import type { Class } from "./class";
+import type { IHasFullyQualifiedString } from "./constraints";
 
 type MethodOwner = Assembly | Namespace | Class;
 
-export class Method extends GenericMember<MethodOwner, "method"> {
+export class Method extends GenericMember<MethodOwner, "method"> implements IHasFullyQualifiedString {
     constructor(
         name: string,
         isStatic: boolean,

@@ -3,6 +3,7 @@ import { GenericMember, type Accessibility } from "./member";
 import type { Assembly } from "./assembly";
 import type { Namespace } from "./namespace";
 import type { Field } from "./field";
+import type { IHasMembers, IHasFullyQualifiedString } from "./constraints";
 
 type ClassOwner = Assembly | Namespace | Class;
 type ClassMembers = {
@@ -11,7 +12,7 @@ type ClassMembers = {
     readonly classes: readonly Class[],
 };
 
-export class Class extends GenericMember<ClassOwner, "class"> {
+export class Class extends GenericMember<ClassOwner, "class"> implements IHasMembers, IHasFullyQualifiedString {
     members?: ClassMembers;
 
     constructor(

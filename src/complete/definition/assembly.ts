@@ -3,6 +3,7 @@ import type { Namespace } from "./namespace";
 import type { Class } from "./class";
 import type { Field } from "./field";
 import type { Method } from "./method";
+import type { IHasMembers } from "./constraints";
 
 type AssemblyMembers = {
     readonly namespaces: readonly Namespace[],
@@ -11,7 +12,7 @@ type AssemblyMembers = {
     readonly methods: readonly Method[],
 };
 
-export class Assembly extends Symbol<"assembly"> {
+export class Assembly extends Symbol<"assembly"> implements IHasMembers {
     members?: AssemblyMembers;
     constructor(name: string) {
         super("assembly", name);

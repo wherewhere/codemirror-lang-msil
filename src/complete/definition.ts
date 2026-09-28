@@ -1,6 +1,6 @@
-import { syntaxTree } from "@codemirror/language";
 import type { EditorState, Text } from "@codemirror/state";
-import type { SyntaxNode } from "@lezer/common";
+import { syntaxTree } from "@codemirror/language";
+import { NodeWeakMap, type SyntaxNode } from "@lezer/common";
 
 import { Assembly } from "./definition/assembly";
 import { Namespace } from "./definition/namespace";
@@ -141,11 +141,15 @@ function createClass(node: SyntaxNode | null, doc: Text, owner?: Assembly | Name
     }
 }
 
+const cache = new NodeWeakMap<Assembly>();
 export function getCurrentAssembly(state: EditorState) {
     const doc = state.doc;
     const root = syntaxTree(state).topNode;
+    const cached = cache.get(root);
+    if (cached) { return cached; }
     const assembly = createAssembly(root.getChild("Assembly"), doc);
     assembly.members = getNamespaceMembers(root, doc, assembly);
+    cache.set(root, assembly);
     return assembly;
 }
 
@@ -158,3 +162,4 @@ export {
     Field,
     Method
 }
+export * from "./definition/constraints";

@@ -1,15 +1,11 @@
-import type { Symbol, MemberBase, Assembly } from "../dist";
+import { isIHasMembers, type Symbol, type MemberBase, type Assembly, type IHasMembers } from "../dist";
 
 type DefinitionNode = {
     label: string;
     children: DefinitionNode[];
 };
 
-interface IHasMembers {
-    members?: Record<string, MemberBase<Symbol>[]>;
-}
-
-function* readMembers(members?: Record<string, MemberBase<Symbol>[]>) {
+function* readMembers(members?: Record<string, readonly MemberBase<Symbol>[]>) {
     if (typeof members === "object") {
         for (const key in members) {
             const member = members[key];
@@ -20,10 +16,6 @@ function* readMembers(members?: Record<string, MemberBase<Symbol>[]>) {
             }
         }
     }
-}
-
-function isIHasMembers(symbol: Symbol): symbol is Symbol & IHasMembers {
-    return "members" in symbol;
 }
 
 function createNode(symbol: Symbol): DefinitionNode {
