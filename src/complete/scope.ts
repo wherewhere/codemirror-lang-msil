@@ -1,4 +1,5 @@
-import type { CompletionContext } from "@codemirror/autocomplete";
+import type { CompletionContext, Completion } from "@codemirror/autocomplete";
+import type { EditorView } from "@codemirror/view";
 import type { SyntaxNode } from "@lezer/common";
 import { getInstruction } from "./keywords/instructions";
 import { typeOptions } from "./keywords/type";
@@ -38,16 +39,62 @@ function filterByKind<T extends SymbolKind>(assembly: Assembly, kind: T) {
     return readMembers(assembly.members, item => item.kind === kind) as Iterable<MemberBase<Symbol<T>>>;
 }
 
-function getMethodCompletions(context: CompletionContext) {
-    const methods = [...filterByKind(getCurrentAssembly(context.state), "method")];
+function getType<T extends SymbolKind>(kind: T): T extends "method" ? "function" : T {
+    switch (kind) {
+        case "method":
+            return "function" as any;
+        default:
+            return kind as any;
+    }
+}
+
+function getCompletions<T extends SymbolKind>(from: number, kind: T, context: CompletionContext) {
+    const methods = [...filterByKind(getCurrentAssembly(context.state), kind)];
     const seen = new Set<string>();
+    const type = getType(kind);
     return methods.flatMap(symbol => {
         if (!(isIHasFullyQualifiedString(symbol))) { return []; }
-        const label = symbol.toFullyQualifiedString();
-        if (seen.has(label)) { return []; }
-        seen.add(label);
-        return [{ label, info: symbol.toString(), type: "function" }];
+        const info = symbol.toFullyQualifiedString();
+        if (seen.has(info)) { return []; }
+        seen.add(info);
+        return [{
+            label: symbol.fullyQualifiedName,
+            type, info,
+            apply: (view: EditorView, _: Completion, __: number, to: number) =>
+                view.dispatch({ changes: { from, to, insert: info } }),
+            boost: 2
+        }];
     });
+}
+
+function getMethodCompletions(node: SyntaxNode, context: CompletionContext) {
+    const nextSibling = node.nextSibling;
+    let results: (ReturnType<typeof getCompletions>[number] | typeof callConv[number])[] = getCompletions(nextSibling?.from ?? node.to, "method", context);
+    if (nextSibling?.name === "MethodRef") {
+        const firstChild = nextSibling.firstChild;
+        if (firstChild?.name === "CallingConvention" && firstChild.nextSibling?.name === '⚠') {
+            results = results.concat(callConv, typeOptions);
+        }
+    }
+    else {
+        results = results.concat(callConv, {
+            label: "mdtoken",
+            type: keyword
+        }, typeOptions);
+    }
+    return results;
+}
+
+function getFieldCompletions(node: SyntaxNode, context: CompletionContext) {
+    const nextSibling = node.nextSibling;
+    let results: (ReturnType<typeof getCompletions>[number] | typeof callConv[number])[] = getCompletions(nextSibling?.from ?? node.to, "field", context);
+    return results;
+}
+
+function getTypeCompletions(node: SyntaxNode, context: CompletionContext) {
+    const nextSibling = node.nextSibling;
+    let results: (ReturnType<typeof getCompletions>[number] | typeof callConv[number])[] = getCompletions(nextSibling?.from ?? node.to, "class", context);
+    return results;
 }
 
 export function methodScopeBlock(node: SyntaxNode, context: CompletionContext) {
@@ -77,20 +124,18 @@ export function methodScopeBlock(node: SyntaxNode, context: CompletionContext) {
         case "Instrction":
             let opcode = prevSibling.getChild("OpCode.Method");
             if (opcode) {
-                const methodCompletions = getMethodCompletions(context);
-                const nextSibling = opcode.nextSibling;
-                if (nextSibling?.name === "MethodRef") {
-                    const firstChild = nextSibling.firstChild;
-                    if (firstChild?.name === "CallingConvention" && firstChild.nextSibling?.name === '⚠') {
-                        return getCompletion(node.from, callConv.concat(typeOptions, methodCompletions));
-                    }
-                    break;
+                return getCompletion(node.from, getMethodCompletions(opcode, context));
+            }
+            else {
+                opcode = prevSibling.getChild("OpCode.Field");
+                if (opcode) {
+                    return getCompletion(node.from, getFieldCompletions(opcode, context));
                 }
                 else {
-                    return getCompletion(node.from, callConv.concat({
-                        label: "mdtoken",
-                        type: keyword
-                    }, typeOptions, methodCompletions));
+                opcode = prevSibling.getChild("OpCode.Type");
+                if (opcode) {
+                    return getCompletion(node.from, getTypeCompletions(opcode, context));
+                }
                 }
             }
             break;

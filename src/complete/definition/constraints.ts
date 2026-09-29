@@ -5,7 +5,11 @@ export interface IHasMembers {
     members?: Record<string, readonly MemberBase<Symbol>[]>;
 }
 
-export interface IHasFullyQualifiedString {
+export interface IHasFullyQualifiedName {
+    readonly fullyQualifiedName: string;
+}
+
+export interface IHasFullyQualifiedString extends IHasFullyQualifiedName {
     toFullyQualifiedString(): string;
 }
 
@@ -13,6 +17,10 @@ export function isIHasMembers<T extends Symbol>(symbol: T): symbol is T & IHasMe
     return "members" in symbol;
 }
 
+export function isIHasFullyQualifiedName<T extends Symbol>(symbol: T): symbol is T & IHasFullyQualifiedName {
+    return "fullyQualifiedName" in symbol;
+}
+
 export function isIHasFullyQualifiedString<T extends Symbol>(symbol: T): symbol is T & IHasFullyQualifiedString {
-    return typeof (symbol as any).toFullyQualifiedString === "function";
+    return isIHasFullyQualifiedName(symbol) && typeof (symbol as any).toFullyQualifiedString === "function";
 }

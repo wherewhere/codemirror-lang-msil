@@ -36,11 +36,11 @@ export class Class extends GenericMember<ClassOwner, "class"> implements IHasMem
                 case "namespace":
                     result = `${owner.fullyQualifiedName}.${result}`;
                     break;
-                case "assembly":
-                    if (owner.name) {
-                        result = `[${owner.name}]${result}`;
-                    }
-                    break;
+                // case "assembly":
+                //     if (owner.name) {
+                //         result = `[${owner.name}]${result}`;
+                //     }
+                //     break;
             }
         }
         return result;

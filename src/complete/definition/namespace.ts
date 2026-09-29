@@ -29,11 +29,11 @@ export class Namespace extends MemberBase<NamespaceOwner, "namespace"> {
                 case "namespace":
                     result = `${owner.fullyQualifiedName}.${result}`;
                     break;
-                case "assembly":
-                    if (owner.name) {
-                        result = `[${owner.name}]${result}`;
-                    }
-                    break;
+                // case "assembly":
+                //     if (owner.name) {
+                //         result = `[${owner.name}]${result}`;
+                //     }
+                //     break;
             }
         }
         return result;

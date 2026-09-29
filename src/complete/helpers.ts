@@ -1,4 +1,5 @@
 import type { SyntaxNode } from "@lezer/common";
+import type { Completion } from "@codemirror/autocomplete";
 
 export function findPrevSibling(node: SyntaxNode | null, name: string) {
     for (let pos = node; pos; pos = pos.prevSibling) {
@@ -23,7 +24,7 @@ export function isAtRoot(node: SyntaxNode, name: string) {
     return null;
 }
 
-export function getCompletion(from: number, options: { label: string, info?: string, type: string }[]) {
+export function getCompletion<T extends Completion>(from: number, options: T[]) {
     return {
         from,
         options
