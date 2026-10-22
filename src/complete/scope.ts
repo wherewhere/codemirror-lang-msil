@@ -14,7 +14,8 @@ import {
     type MemberBase,
     type Assembly,
     type Symbol,
-    type SymbolKind
+    type SymbolKind,
+    type IHasFullyQualifiedString
 } from "./definition";
 
 function* readMembers(members: Record<string, readonly MemberBase<Symbol>[]> | undefined, predicate: (item: MemberBase<Symbol>) => boolean): Iterable<MemberBase<Symbol>> {
@@ -39,6 +40,10 @@ function filterByKind<T extends SymbolKind>(assembly: Assembly, kind: T) {
     return readMembers(assembly.members, item => item.kind === kind) as Iterable<MemberBase<Symbol<T>>>;
 }
 
+function filterByKinds<T extends SymbolKind>(assembly: Assembly, kind: T[]) {
+    return readMembers(assembly.members, item => kind.includes(item.kind as T)) as Iterable<MemberBase<Symbol<T>>>;
+}
+
 function getType<T extends SymbolKind>(kind: T): T extends "method" ? "function" : T {
     switch (kind) {
         case "method":
@@ -49,10 +54,10 @@ function getType<T extends SymbolKind>(kind: T): T extends "method" ? "function"
 }
 
 function getCompletions<T extends SymbolKind>(from: number, kind: T, context: CompletionContext) {
-    const methods = [...filterByKind(getCurrentAssembly(context.state), kind)];
+    const members = [...filterByKind(getCurrentAssembly(context.state), kind)];
     const seen = new Set<string>();
     const type = getType(kind);
-    return methods.flatMap(symbol => {
+    return members.flatMap(symbol => {
         if (!(isIHasFullyQualifiedString(symbol))) { return []; }
         const info = symbol.toFullyQualifiedString();
         if (seen.has(info)) { return []; }
@@ -91,10 +96,40 @@ function getFieldCompletions(node: SyntaxNode, context: CompletionContext) {
     return results;
 }
 
-function getTypeCompletions(node: SyntaxNode, context: CompletionContext) {
+export function getTypeCompletions(node: SyntaxNode, context: CompletionContext) {
     const nextSibling = node.nextSibling;
     let results: (ReturnType<typeof getCompletions>[number] | typeof callConv[number])[] = getCompletions(nextSibling?.from ?? node.to, "class", context);
     return results;
+}
+
+export function getTokenCompletions(node: SyntaxNode, context: CompletionContext) {
+    const nextSibling = node.nextSibling;
+    const from = nextSibling?.from ?? node.to;
+    const members = [...filterByKinds(getCurrentAssembly(context.state), ["class", "field", "method"])];
+    const seen = new Set<string>();
+    return members.flatMap(symbol => {
+        if (!(isIHasFullyQualifiedString(symbol))) { return []; }
+        const info = getInfo(symbol);
+        function getInfo(_symbol: typeof symbol & IHasFullyQualifiedString) {
+            const kind = _symbol.kind;
+            switch (kind) {
+                case "field":
+                case "method":
+                    return `${kind} ${_symbol.toFullyQualifiedString()}`;
+                default:
+                    return _symbol.toFullyQualifiedString();
+            }
+        }
+        if (seen.has(info)) { return []; }
+        seen.add(info);
+        return [{
+            label: symbol.fullyQualifiedName,
+            type: getType(symbol.kind), info,
+            apply: (view: EditorView, _: Completion, __: number, to: number) =>
+                view.dispatch({ changes: { from, to, insert: info } }),
+            boost: 2
+        }];
+    });
 }
 
 export function methodScopeBlock(node: SyntaxNode, context: CompletionContext) {
@@ -132,10 +167,16 @@ export function methodScopeBlock(node: SyntaxNode, context: CompletionContext) {
                     return getCompletion(node.from, getFieldCompletions(opcode, context));
                 }
                 else {
-                opcode = prevSibling.getChild("OpCode.Type");
-                if (opcode) {
-                    return getCompletion(node.from, getTypeCompletions(opcode, context));
-                }
+                    opcode = prevSibling.getChild("OpCode.Type");
+                    if (opcode) {
+                        return getCompletion(node.from, getTypeCompletions(opcode, context));
+                    }
+                    else {
+                        opcode = prevSibling.getChild("OpCode.Token");
+                        if (opcode) {
+                            return getCompletion(node.from, getTokenCompletions(opcode, context));
+                        }
+                    }
                 }
             }
             break;

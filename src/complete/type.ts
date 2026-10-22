@@ -1,6 +1,7 @@
 import type { CompletionContext } from "@codemirror/autocomplete";
 import type { SyntaxNode } from "@lezer/common";
 import { securityAttrBody } from "./attribute";
+import { getTypeCompletions, getTokenCompletions } from "./scope";
 import { keyword } from "./keywords/store";
 
 export function typeSpecBody(node: SyntaxNode, context: CompletionContext) {
@@ -19,11 +20,22 @@ export function typeSpecBody(node: SyntaxNode, context: CompletionContext) {
                         });
                         return result;
                     }
+                case "OpCode.Type":
+                    return {
+                        from: parent.from,
+                        options: getTypeCompletions(prevSibling, context)
+                    };
+                case "OpCode.Token":
+                    return {
+                        from: parent.from,
+                        options: getTokenCompletions(prevSibling, context)
+                    };
                 case '⚠':
                     if (parent.parent?.name === "Security") {
                         return securityAttrBody(node);
                     }
             }
+            break;
         case "Type":
             return typeBody(node, context);
     }
