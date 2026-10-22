@@ -49,10 +49,6 @@ export class Field extends Member<FieldOwner, "field"> implements IHasFullyQuali
     }
 
     toFullyQualifiedString() {
-        let results = '';
-        if (!this.isStatic) {
-            results += "instance ";
-        }
-        return `${results}${this.type} ${this.fullyQualifiedName}`;
+        return `${this.type} ${this.fullyQualifiedName}`;
     }
 }
