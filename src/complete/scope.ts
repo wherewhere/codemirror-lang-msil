@@ -90,10 +90,28 @@ function getMethodCompletions(node: SyntaxNode, context: CompletionContext) {
     return results;
 }
 
-function getFieldCompletions(node: SyntaxNode, context: CompletionContext) {
+function isField<T extends Symbol>(symbol: T): symbol is T & { kind: "field", isLiteral: boolean, isStatic: boolean } {
+    return symbol.kind === "field" && "isLiteral" in symbol && "isStatic" in symbol;
+}
+
+function getFieldCompletionsWithOption(node: SyntaxNode, isStatic: boolean, context: CompletionContext) {
     const nextSibling = node.nextSibling;
-    let results: (ReturnType<typeof getCompletions>[number] | typeof callConv[number])[] = getCompletions(nextSibling?.from ?? node.to, "field", context);
-    return results;
+    const from = nextSibling?.from ?? node.to;
+    const members = [...readMembers(getCurrentAssembly(context.state).members, item => isField(item) && !item.isLiteral && item.isStatic === isStatic)];
+    const seen = new Set<string>();
+    return members.flatMap(symbol => {
+        if (!(isIHasFullyQualifiedString(symbol))) { return []; }
+        const info = symbol.toFullyQualifiedString();
+        if (seen.has(info)) { return []; }
+        seen.add(info);
+        return [{
+            label: symbol.fullyQualifiedName,
+            type: "field", info,
+            apply: (view: EditorView, _: Completion, __: number, to: number) =>
+                view.dispatch({ changes: { from, to, insert: info } }),
+            boost: 2
+        }];
+    });
 }
 
 export function getTypeCompletions(node: SyntaxNode, context: CompletionContext) {
@@ -164,7 +182,8 @@ export function methodScopeBlock(node: SyntaxNode, context: CompletionContext) {
             else {
                 opcode = prevSibling.getChild("OpCode.Field");
                 if (opcode) {
-                    return getCompletion(node.from, getFieldCompletions(opcode, context));
+                    const code = context.state.sliceDoc(opcode.from, opcode.to);
+                    return getCompletion(node.from, getFieldCompletionsWithOption(opcode, code.includes("sfld"), context));
                 }
                 else {
                     opcode = prevSibling.getChild("OpCode.Type");
