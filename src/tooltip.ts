@@ -62,13 +62,15 @@ export function msilTooltip(render: hoverRender = hoverRender, options?: Paramet
                 return null;
             }
         }
-        const code = view.state.sliceDoc(node.from, node.to);
+        const { from, to } = node;
+        const code = view.state.sliceDoc(from, to);
         const opcode = getInstruction(code);
         if (opcode) {
             const desc = opcode.info?.tooltip;
             if (desc) {
                 return {
-                    pos,
+                    pos: from,
+                    end: to,
                     create() {
                         return render({ title: code, type: keyword }, desc);
                     }
