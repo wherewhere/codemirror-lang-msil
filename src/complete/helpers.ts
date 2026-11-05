@@ -24,7 +24,7 @@ export function isAtRoot(node: SyntaxNode, name: string) {
     return null;
 }
 
-export function getCompletion<T extends Completion>(from: number, options: T[]) {
+export function getCompletion<T extends Completion>(from: number, options: readonly T[]) {
     return {
         from,
         options

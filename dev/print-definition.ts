@@ -2,7 +2,7 @@ import { isIHasMembers, type Symbol, type MemberBase, type Assembly, type IHasMe
 
 type DefinitionNode = {
     label: string;
-    children: DefinitionNode[];
+    children: readonly DefinitionNode[];
 };
 
 function* readMembers(members?: Record<string, readonly MemberBase<Symbol>[]>) {

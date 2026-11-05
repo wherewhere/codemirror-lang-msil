@@ -162,9 +162,9 @@ export function printTree(
     { from, to, start = 0, includeParents }: PrintTreeOptions = {},
 ): string {
     const inp = typeof input === "string" ? new StringInput(input) : input
-    const text = Text.of(inp.read(0, inp.length).split("\n"))
+    const text = Text.of(inp.read(0, inp.length).split('\n'))
     const state = {
-        output: "",
+        output: '',
         prefixes: [] as string[],
         hasNextSibling: false,
     }
@@ -178,10 +178,10 @@ export function printTree(
         },
         onEnter(node) {
             validator.traversal.onEnter(node)
-            const isTop = state.output === ""
+            const isTop = state.output === ''
             const hasPrefix = !isTop || node.from > 0
             if (hasPrefix) {
-                state.output += (!isTop ? "\n" : "") + state.prefixes.join("")
+                state.output += (!isTop ? '\n' : '') + state.prefixes.join('')
                 if (state.hasNextSibling) {
                     state.output += " ├ "
                     state.prefixes.push(" │")

@@ -40,7 +40,7 @@ function filterByKind<T extends SymbolKind>(assembly: Assembly, kind: T) {
     return readMembers(assembly.members, item => item.kind === kind) as Iterable<MemberBase<Symbol<T>>>;
 }
 
-function filterByKinds<T extends SymbolKind>(assembly: Assembly, kind: T[]) {
+function filterByKinds<T extends SymbolKind>(assembly: Assembly, kind: readonly T[]) {
     return readMembers(assembly.members, item => kind.includes(item.kind as T)) as Iterable<MemberBase<Symbol<T>>>;
 }
 

@@ -16,7 +16,7 @@ function getModifiers(node: SyntaxNode, attributeName: string, doc: Text) {
     return node.getChildren(attributeName).flatMap(x => doc.sliceString(x.from, x.to).trim().split(/\s+/));
 }
 
-function getAccessibility(modifiers: string[], $default: typeof accessibilities[number] = privatescope) {
+function getAccessibility(modifiers: readonly string[], $default: typeof accessibilities[number] = privatescope) {
     return accessibilities.find(x => modifiers.includes(x)) ?? $default;
 }
 
